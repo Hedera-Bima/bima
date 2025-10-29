@@ -1,4 +1,4 @@
-import { motion, useInView, useMotionValue, useTransform } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { MapPin, Shield, CheckCircle2, Clock, Eye, ExternalLink, Sparkles, Zap } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -12,7 +12,31 @@ interface LandListing {
   inspectors: number;
   imageGradient: string;
   lastUpdated: string;
+  imageUrl?: string;
 }
+
+// Resolve available images from src/assets at build time (Vite)
+const assetImages = import.meta.glob("/src/assets/**/*.{png,jpg,jpeg,webp}", {
+  eager: true,
+  as: "url",
+}) as Record<string, string>;
+
+const findImageByName = (name: string): string | undefined => {
+  const lowerName = name.toLowerCase();
+  const entries = Object.entries(assetImages);
+  const match = entries.find(([path]) => path.toLowerCase().includes(`/${lowerName}.`));
+  if (match) return match[1];
+  // fallback: contains name anywhere in basename
+  const loose = entries.find(([path]) => path.toLowerCase().includes(lowerName));
+  return loose ? loose[1] : undefined;
+};
+
+// Bind exact images: moon, barn, valley, run
+const allAssets = Object.values(assetImages);
+const imgMoon = findImageByName("moon") || allAssets[0];
+const imgBarn = findImageByName("barn") || allAssets[1] || allAssets[0];
+const imgValley = findImageByName("valley") || allAssets[2] || allAssets[0];
+const imgRun = findImageByName("run") || allAssets[3] || allAssets[0];
 
 const listings: LandListing[] = [
   {
@@ -25,6 +49,7 @@ const listings: LandListing[] = [
     inspectors: 3,
     imageGradient: "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
     lastUpdated: "2 hours ago",
+    imageUrl: imgMoon,
   },
   {
     id: "2",
@@ -36,6 +61,7 @@ const listings: LandListing[] = [
     inspectors: 2,
     imageGradient: "from-violet-500/20 via-purple-500/20 to-fuchsia-500/20",
     lastUpdated: "5 hours ago",
+    imageUrl: imgBarn,
   },
   {
     id: "3",
@@ -47,6 +73,7 @@ const listings: LandListing[] = [
     inspectors: 5,
     imageGradient: "from-orange-500/20 via-amber-500/20 to-yellow-500/20",
     lastUpdated: "1 day ago",
+    imageUrl: imgValley,
   },
   {
     id: "4",
@@ -58,6 +85,7 @@ const listings: LandListing[] = [
     inspectors: 0,
     imageGradient: "from-blue-500/20 via-indigo-500/20 to-purple-500/20",
     lastUpdated: "3 days ago",
+    imageUrl: imgRun,
   },
 ];
 
@@ -99,10 +127,10 @@ export const MarketplacePreview = () => {
         
         {/* Grid pattern */}
         <motion.div
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-10"
           style={{
-            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px)`,
             backgroundSize: "50px 50px",
           }}
           animate={{
@@ -115,50 +143,7 @@ export const MarketplacePreview = () => {
           }}
         />
 
-        {/* Floating orbs */}
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            className={`absolute w-[500px] h-[500px] rounded-full blur-3xl opacity-20 bg-gradient-to-r ${
-              i === 0
-                ? "from-violet-500 to-purple-500 top-0 left-0"
-                : i === 1
-                ? "from-cyan-500 to-blue-500 top-1/2 right-0"
-                : "from-fuchsia-500 to-pink-500 bottom-0 left-1/3"
-            }`}
-            animate={{
-              y: [0, 100, 0],
-              x: [0, 50, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 15 + i * 5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-
-        {/* Floating particles */}
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-primary rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 0.8, 0.2],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
+        {/* Background visuals reduced for clarity */}
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -174,7 +159,7 @@ export const MarketplacePreview = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/20 border border-border/50 mb-6"
           >
             <motion.div
               animate={{ rotate: 360 }}
@@ -182,7 +167,7 @@ export const MarketplacePreview = () => {
             >
               <Sparkles className="w-4 h-4 text-primary" />
             </motion.div>
-            <span className="text-sm font-medium bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="text-sm font-medium text-foreground/90">
               Live Marketplace
             </span>
           </motion.div>
@@ -194,7 +179,7 @@ export const MarketplacePreview = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-5xl md:text-6xl font-bold mb-6"
           >
-            <span className="bg-gradient-to-r from-primary via-purple-400 to-secondary bg-clip-text text-transparent">
+            <span className="text-foreground/95">
               Featured Land Listings
             </span>
           </motion.h2>
@@ -204,7 +189,7 @@ export const MarketplacePreview = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl text-muted-foreground max-w-2xl mx-auto"
+            className="text-xl text-foreground/85 max-w-2xl mx-auto"
           >
             Browse verified properties with transparent ownership records secured on Hedera blockchain
           </motion.p>
@@ -271,26 +256,11 @@ export const MarketplacePreview = () => {
                 />
 
                 {/* Card */}
-                <div className="relative h-full bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/50">
+                <div className="relative h-full bg-card rounded-2xl border border-border/70 overflow-hidden transition-all duration-300 group-hover:border-primary/50">
                   {/* Animated shine effect */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
-                    animate={{
-                      translateX: hoveredCard === listing.id ? ["100%", "200%"] : "-100%",
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      ease: "easeInOut",
-                    }}
-                  />
+                  
                   {/* Animated gradient background on hover */}
-                  <motion.div
-                    className={`absolute inset-0 bg-gradient-to-br ${listing.imageGradient}`}
-                    animate={{
-                      opacity: hoveredCard === listing.id ? 1 : 0,
-                    }}
-                    transition={{ duration: 0.5 }}
-                  />
+                  
 
                   {/* Top glow effect */}
                   <motion.div 
@@ -326,20 +296,29 @@ export const MarketplacePreview = () => {
 
                   {/* Content */}
                   <div className="relative p-6 space-y-4">
-                    {/* Image Placeholder with gradient */}
+                    {/* Image area: show provided image if available, else neutral background */}
                     <motion.div 
-                      className={`relative h-40 -mx-6 -mt-6 mb-4 bg-gradient-to-br ${listing.imageGradient} overflow-hidden`}
+                      className={`relative h-40 -mx-6 -mt-6 mb-4 bg-muted overflow-hidden`}
                       animate={{
                         scale: hoveredCard === listing.id ? 1.05 : 1,
                       }}
                       transition={{ duration: 0.5 }}
                     >
+                      {listing.imageUrl && (
+                        <img
+                          src={listing.imageUrl}
+                          alt={`${listing.location} land`}
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full object-cover"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
                       {/* Animated grid overlay */}
                       <motion.div
                         className="absolute inset-0 opacity-30"
                         style={{
-                          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                                          linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
+                          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                                          linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)`,
                           backgroundSize: "20px 20px",
                         }}
                         animate={{
@@ -355,17 +334,7 @@ export const MarketplacePreview = () => {
                       />
 
                       {/* Scan line effect */}
-                      <motion.div
-                        className="absolute inset-x-0 h-20 bg-gradient-to-b from-white/20 to-transparent"
-                        animate={{
-                          y: hoveredCard === listing.id ? ["-100%", "200%"] : "-100%",
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: hoveredCard === listing.id ? Infinity : 0,
-                          ease: "linear",
-                        }}
-                      />
+                      
 
                       {/* Verification badge overlay */}
                       <div className="absolute top-3 right-3">
@@ -382,19 +351,8 @@ export const MarketplacePreview = () => {
                             hoveredCard === listing.id ? 'border-primary' : 'border-border'
                           } cursor-pointer transition-all duration-300`}
                         >
-                          <motion.div
-                            animate={{
-                              rotate: listing.verificationStatus === "in-progress" ? 360 : 0,
-                            }}
-                            transition={{
-                              duration: 2,
-                              repeat: listing.verificationStatus === "in-progress" ? Infinity : 0,
-                              ease: "linear",
-                            }}
-                          >
-                            <StatusIcon className={`w-3.5 h-3.5 bg-gradient-to-br ${status.gradient} bg-clip-text text-transparent`} />
-                          </motion.div>
-                          <span className={`text-xs font-semibold bg-gradient-to-br ${status.gradient} bg-clip-text text-transparent`}>
+                          <StatusIcon className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-xs font-semibold text-foreground/90">
                             {status.label}
                           </span>
                         </motion.div>
@@ -487,9 +445,9 @@ export const MarketplacePreview = () => {
                           ease: "easeInOut",
                         }}
                       />
-                      <p className="text-xs text-muted-foreground mb-1 relative z-10">Price</p>
+                      <p className="text-xs text-foreground/80 mb-1 relative z-10">Price</p>
                       <motion.p 
-                        className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent relative z-10"
+                        className="text-2xl font-bold text-foreground relative z-10"
                         animate={{
                           scale: hoveredCard === listing.id ? [1, 1.05, 1] : 1,
                         }}
@@ -503,7 +461,7 @@ export const MarketplacePreview = () => {
 
                     {/* Owner DID */}
                     <motion.div 
-                      className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 group-hover:bg-muted/50 transition-colors duration-300 relative overflow-hidden"
+                      className="flex items-center gap-2 p-3 rounded-lg bg-muted/60 group-hover:bg-muted/70 transition-colors duration-300 relative overflow-hidden"
                       whileHover={{ scale: 1.02 }}
                     >
                       <motion.div
@@ -538,7 +496,7 @@ export const MarketplacePreview = () => {
 
                     {/* Stats */}
                     <motion.div 
-                      className="flex items-center justify-between text-xs text-muted-foreground pt-2"
+                      className="flex items-center justify-between text-xs text-foreground pt-2"
                       initial={{ opacity: 0, y: 10 }}
                       animate={isInView ? { opacity: 1, y: 0 } : {}}
                       transition={{ delay: index * 0.2 + 0.6 }}
@@ -580,19 +538,8 @@ export const MarketplacePreview = () => {
                         y: -2,
                       }}
                       whileTap={{ scale: 0.95 }}
-                      className="relative w-full mt-4 py-3 px-4 rounded-lg bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold flex items-center justify-center gap-2 overflow-hidden transition-all duration-300"
+                      className="relative w-full mt-4 py-3 px-4 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 overflow-hidden transition-all duration-200 hover:bg-primary/90"
                     >
-                      {/* Button shimmer effect */}
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                        animate={{
-                          x: hoveredCard === listing.id ? ["-200%", "200%"] : "-200%",
-                        }}
-                        transition={{
-                          duration: 1,
-                          repeat: hoveredCard === listing.id ? Infinity : 0,
-                        }}
-                      />
                       <span className="relative z-10">View Details</span>
                       <motion.div
                         animate={{

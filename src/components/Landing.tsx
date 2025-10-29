@@ -7,13 +7,14 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { connectHashpack } from "@/lib/hashpack";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string>("home");
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Home", id: "home" },
@@ -40,6 +41,10 @@ const Index = () => {
   };
 
   const handleNavClick = (id: string) => {
+    if (id === 'inspectors') {
+      navigate('/trusted');
+      return;
+    }
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -97,7 +102,7 @@ const Index = () => {
   ];
 
   return (
-    <div id="home" className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20 text-foreground overflow-hidden">
+    <div id="home" className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 text-foreground overflow-hidden">
       {/* Animated Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
@@ -130,15 +135,29 @@ const Index = () => {
             ease: "easeInOut",
           }}
         />
+        <motion.div
+          className="absolute top-1/3 right-1/3 w-[420px] h-[420px] bg-fuchsia-500/15 rounded-full blur-[140px]"
+          animate={{
+            x: [0, 60, -40, 0],
+            y: [0, -30, 40, 0],
+            scale: [1, 1.1, 0.95, 1],
+          }}
+          transition={{
+            duration: 28,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
 
         {/* Floating Particles */}
         {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-primary/30 rounded-full"
+            className="absolute w-1 h-1 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
+              backgroundColor: `hsl(${(i * 40) % 360} 100% 70% / 0.5)`,
             }}
             animate={{
               y: [0, -30, 0],
@@ -422,7 +441,7 @@ const Index = () => {
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
-                className="group relative p-6 rounded-xl bg-secondary/30 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all"
+                className="group relative p-6 rounded-xl bg-secondary/40 backdrop-blur-sm border border-border/50 hover:border-primary/60 transition-all hover:shadow-[0_20px_60px_rgba(99,102,241,0.25)]"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.2 + index * 0.1 }}
@@ -434,6 +453,7 @@ const Index = () => {
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
                 />
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-primary/50 via-fuchsia-500/50 to-accent/50 z-10 opacity-80" />
                 <div className="relative z-10">
                   <motion.div
                     className="inline-flex p-3 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 mb-4"
@@ -471,6 +491,9 @@ const Index = () => {
           </motion.div>
         </div>
       </section>
+      <div className="pointer-events-none relative h-24 -mt-24">
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-[conic-gradient(from_180deg_at_50%_100%,theme(colors.primary/20),theme(colors.fuchsia.500/15),theme(colors.accent/20),transparent_70%)] blur-2xl" />
+      </div>
     </div>
   );
 };
