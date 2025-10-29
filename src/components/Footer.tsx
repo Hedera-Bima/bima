@@ -4,9 +4,9 @@ import { Shield, Twitter, Github, Linkedin, Mail, MapPin, Phone } from "lucide-r
 export const Footer = () => {
   const footerLinks = {
     product: [
-      { label: "How it Works", href: "#" },
-      { label: "Marketplace", href: "#" },
-      { label: "Inspectors", href: "#" },
+      { label: "How it Works", href: "/header" },
+      { label: "Marketplace", href: "/hero" },
+      { label: "Inspectors", href: "/trusted" },
       { label: "Pricing", href: "#" },
     ],
     company: [
@@ -162,7 +162,7 @@ export const Footer = () => {
                 transition={{ duration: 0.2 }}
               >
                 <Phone className="w-4 h-4" />
-                <span>+254 700 000 000</span>
+                <span>+254 746271236</span>
               </motion.div>
               <motion.div 
                 className="flex items-center gap-2 text-sm text-muted-foreground"
@@ -170,7 +170,7 @@ export const Footer = () => {
                 transition={{ duration: 0.2 }}
               >
                 <Mail className="w-4 h-4" />
-                <span>hello@bima.co.ke</span>
+                <span>6940.2021@students.ku.ac.ke</span>
               </motion.div>
             </div>
           </motion.div>

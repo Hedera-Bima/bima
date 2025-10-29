@@ -7,7 +7,7 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { connectHashpack } from "@/lib/hashpack";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,15 +15,30 @@ const Index = () => {
   const [accountId, setAccountId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string>("home");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const navLinks = [
-    { name: "Home", id: "home" },
-    { name: "How It Works", id: "how-it-works" },
-    { name: "Inspectors", id: "inspectors" },
-    { name: "Marketplace", id: "marketplace" },
-    { name: "About", id: "about" },
-    { name: "Contact", id: "contact" },
+    { name: "Home", id: "home", to: "/home" },
+    { name: "How It Works", id: "how-it-works", to: "/header" },
+    { name: "Inspectors", id: "inspectors", to: "/trusted" },
+    { name: "Marketplace", id: "marketplace", to: "/hero" },
+    { name: "About", id: "about", to: "/" },
+    { name: "Contact", id: "contact", to: "/footer" },
   ];
+
+  // Track active link based on current path
+  useEffect(() => {
+    const pathToId: Record<string, string> = {
+      "/home": "home",
+      "/how-it-works": "how-it-works",
+      "/inspectors": "inspectors",
+      "/hero": "marketplace",
+      "/": "about",
+      "/layout": "contact",
+    };
+    const id = pathToId[location.pathname];
+    if (id) setActiveSection(id);
+  }, [location.pathname]);
 
   const handleConnect = async () => {
     if (isConnecting) return;
@@ -41,10 +56,7 @@ const Index = () => {
   };
 
   const handleNavClick = (id: string) => {
-    if (id === 'inspectors') {
-      navigate('/trusted');
-      return;
-    }
+    // Kept for potential in-page sections; not used by header links anymore
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -210,36 +222,33 @@ const Index = () => {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-2">
               {navLinks.map((link, index) => (
-                <motion.button
-                  type="button"
-                  key={link.name}
-                  onClick={() => handleNavClick(link.id)}
-                  onKeyDown={(e) => handleNavKeyDown(e, link.id)}
-                  role="link"
-                  aria-current={activeSection === link.id ? 'page' : undefined}
-                  className={`relative px-4 py-2 text-sm font-semibold rounded-md transition-colors bg-transparent group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    activeSection === link.id
-                      ? 'text-foreground border border-primary/40 bg-secondary/60'
-                      : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border border-transparent hover:border-primary/30'
-                  }`}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <span className="relative z-10">{link.name}</span>
+                <Link key={link.name} to={link.to} className="group">
                   <motion.div
-                    className="absolute inset-0 rounded-md pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: activeSection === link.id ? 1 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  />
-                  <span
-                    className={`pointer-events-none absolute left-4 right-4 -bottom-1 h-0.5 rounded-full transition-opacity duration-200 ${
-                      activeSection === link.id ? 'opacity-100 bg-gradient-to-r from-primary via-accent to-primary' : 'opacity-0 group-hover:opacity-100 bg-primary/60'
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.05 }}
+                    aria-current={activeSection === link.id ? 'page' : undefined}
+                    className={`relative px-4 py-2 text-sm font-semibold rounded-md transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                      activeSection === link.id
+                        ? 'text-foreground border border-primary/40 bg-secondary/60'
+                        : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border border-transparent hover:border-primary/30'
                     }`}
-                  />
-                </motion.button>
+                  >
+                    <span className="relative z-10">{link.name}</span>
+                    <motion.div
+                      className="absolute inset-0 rounded-md pointer-events-none"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: activeSection === link.id ? 1 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                    <span
+                      className={`pointer-events-none absolute left-4 right-4 -bottom-1 h-0.5 rounded-full transition-opacity duration-200 ${
+                        activeSection === link.id ? 'opacity-100 bg-gradient-to-r from-primary via-accent to-primary' : 'opacity-0 group-hover:opacity-100 bg-primary/60'
+                      }`}
+                    />
+                  </motion.div>
+                </Link>
               ))}
             </div>
 
@@ -283,24 +292,21 @@ const Index = () => {
             >
               <div className="px-4 py-6 space-y-4">
                 {navLinks.map((link, index) => (
-                  <motion.button
-                    type="button"
-                    key={link.name}
-                    onClick={() => { handleNavClick(link.id); setIsMenuOpen(false); }}
-                    onKeyDown={(e) => handleNavKeyDown(e, link.id)}
-                    role="link"
-                    aria-current={activeSection === link.id ? 'page' : undefined}
-                    className={`w-full text-left px-4 py-3 font-medium rounded-lg transition-colors border ${
-                      activeSection === link.id
-                        ? 'text-foreground bg-secondary/60 border-primary/30'
-                        : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border-transparent hover:border-primary/20'
-                    }`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    {link.name}
-                  </motion.button>
+                  <Link key={link.name} to={link.to} onClick={() => setIsMenuOpen(false)} className="block">
+                    <motion.div
+                      aria-current={activeSection === link.id ? 'page' : undefined}
+                      className={`w-full text-left px-4 py-3 font-medium rounded-lg transition-colors border ${
+                        activeSection === link.id
+                          ? 'text-foreground bg-secondary/60 border-primary/30'
+                          : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border-transparent hover:border-primary/20'
+                      }`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      {link.name}
+                    </motion.div>
+                  </Link>
                 ))}
                 <div className="flex items-center gap-4 pt-4">
                   <ThemeToggle />
