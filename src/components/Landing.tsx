@@ -367,14 +367,14 @@ const Index = () => {
               <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
             </motion.button>
           </Link>
-          <Link to="/trusted">
+          <Link to="/wallet">
             <motion.button
               className="group px-8 py-4 bg-secondary/50 backdrop-blur-sm text-foreground font-bold rounded-lg border-2 border-primary/30 hover:border-primary hover:bg-secondary transition-all flex items-center gap-3 text-lg"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Users className="w-6 h-6" />
-              <span>Become an Inspector</span>
+              <span>Sell-Land</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </motion.button>
             </Link>
