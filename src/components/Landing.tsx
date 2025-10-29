@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Menu, X, Wallet, ChevronRight, Shield, 
@@ -12,6 +12,7 @@ const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [accountId, setAccountId] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string>("home");
 
   const navLinks = [
     { name: "Home", id: "home" },
@@ -43,6 +44,38 @@ const Index = () => {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  const handleNavKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, id: string) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleNavClick(id);
+    }
+  };
+
+  useEffect(() => {
+    const ids = navLinks.map(l => l.id);
+    const observers: IntersectionObserver[] = [];
+
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setActiveSection(id);
+            }
+          });
+        },
+        { root: null, rootMargin: "-40% 0px -55% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+
+    return () => observers.forEach(o => o.disconnect());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const features = [
     {
@@ -161,7 +194,14 @@ const Index = () => {
                   type="button"
                   key={link.name}
                   onClick={() => handleNavClick(link.id)}
-                  className="relative px-4 py-2 text-sm font-semibold rounded-md text-foreground/80 hover:text-foreground transition-colors bg-transparent hover:bg-secondary/60 border border-transparent hover:border-primary/30 group"
+                  onKeyDown={(e) => handleNavKeyDown(e, link.id)}
+                  role="link"
+                  aria-current={activeSection === link.id ? 'page' : undefined}
+                  className={`relative px-4 py-2 text-sm font-semibold rounded-md transition-colors bg-transparent group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                    activeSection === link.id
+                      ? 'text-foreground border border-primary/40 bg-secondary/60'
+                      : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border border-transparent hover:border-primary/30'
+                  }`}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -169,11 +209,15 @@ const Index = () => {
                 >
                   <span className="relative z-10">{link.name}</span>
                   <motion.div
-                    className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 bg-gradient-to-r from-primary/10 via-accent/10 to-transparent"
+                    className="absolute inset-0 rounded-md pointer-events-none"
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
+                    animate={{ opacity: activeSection === link.id ? 1 : 0 }}
                     transition={{ duration: 0.2 }}
+                  />
+                  <span
+                    className={`pointer-events-none absolute left-4 right-4 -bottom-1 h-0.5 rounded-full transition-opacity duration-200 ${
+                      activeSection === link.id ? 'opacity-100 bg-gradient-to-r from-primary via-accent to-primary' : 'opacity-0 group-hover:opacity-100 bg-primary/60'
+                    }`}
                   />
                 </motion.button>
               ))}
@@ -234,7 +278,14 @@ const Index = () => {
                     type="button"
                     key={link.name}
                     onClick={() => { handleNavClick(link.id); setIsMenuOpen(false); }}
-                    className="w-full text-left px-4 py-3 font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/60 rounded-lg transition-colors border border-transparent hover:border-primary/20"
+                    onKeyDown={(e) => handleNavKeyDown(e, link.id)}
+                    role="link"
+                    aria-current={activeSection === link.id ? 'page' : undefined}
+                    className={`w-full text-left px-4 py-3 font-medium rounded-lg transition-colors border ${
+                      activeSection === link.id
+                        ? 'text-foreground bg-secondary/60 border-primary/30'
+                        : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border-transparent hover:border-primary/20'
+                    }`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
