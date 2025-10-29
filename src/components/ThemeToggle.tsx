@@ -28,7 +28,7 @@ export const ThemeToggle: React.FC = () => {
       type="button"
       aria-label="Toggle theme"
       onClick={() => setIsDark((v) => !v)}
-      className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-border/50 bg-background hover:bg-secondary/60 transition-colors"
+      className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-primary/40 bg-secondary/80 text-foreground shadow-md backdrop-blur hover:bg-secondary hover:shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       {isDark ? (
         <Sun className="w-5 h-5" />
@@ -38,3 +38,4 @@ export const ThemeToggle: React.FC = () => {
     </button>
   );
 };
+

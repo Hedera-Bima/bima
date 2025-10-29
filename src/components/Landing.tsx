@@ -5,6 +5,7 @@ import {
   Zap, Lock, TrendingUp, Users, CheckCircle 
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 import { connectHashpack } from "@/lib/hashpack";
 import { Link } from "react-router-dom";
 
@@ -223,32 +224,21 @@ const Index = () => {
               ))}
             </div>
 
-            {/* Theme Toggle & Connect Wallet Button - Desktop */
-            }
-            <div className="hidden lg:flex items-center gap-4">
+            {/* Theme Toggle & Connect Wallet Button - Desktop */}
+            <div className="hidden lg:flex items-center gap-3">
               <ThemeToggle />
-              <motion.button
-                  type="button"
-                  aria-label="Connect Wallet"
-                  onClick={handleConnect}
-                  disabled={isConnecting}
-                  className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                >
-                  <motion.div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent to-primary"
-                    initial={{ x: "100%" }}
-                    whileHover={{ x: "0%" }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  <Wallet className="w-5 h-5 relative z-10" />
-                  <span className="relative z-10">
-                    {isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId.slice(0,6)}…${accountId.slice(-4)}` : 'Connect Wallet'}
-                  </span>
-             </motion.button>
+              <Button
+                type="button"
+                aria-label="Connect Wallet"
+                onClick={handleConnect}
+                disabled={isConnecting}
+                className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                <Wallet className="w-5 h-5" />
+                <span>
+                  {isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId.slice(0,6)}…${accountId.slice(-4)}` : 'Connect Wallet'}
+                </span>
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -295,26 +285,16 @@ const Index = () => {
                 ))}
                 <div className="flex items-center gap-4 pt-4">
                   <ThemeToggle />
-                  <motion.button
+                  <Button
                     type="button"
                     aria-label="Connect Wallet"
                     onClick={handleConnect}
                     disabled={isConnecting}
                     className="cursor-pointer select-none flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    whileTap={{ scale: 0.95 }}
                   >
-                    <motion.div
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent to-primary"
-                      initial={{ x: "100%" }}
-                      whileHover={{ x: "0%" }}
-                      transition={{ duration: 0.3 }}
-                    />
                     <Wallet className="w-5 h-5" />
                     <span>{isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId.slice(0,6)}…${accountId.slice(-4)}` : 'Connect Wallet'}</span>
-                  </motion.button>
+                  </Button>
                 </div>
               </div>
             </motion.div>
