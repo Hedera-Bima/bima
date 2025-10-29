@@ -19,10 +19,10 @@ const Index = () => {
 
   const navLinks = [
     { name: "Home", id: "home", to: "/home" },
-    { name: "How It Works", id: "how-it-works", to: "/header" },
+    { name: "How It Works", id: "how-it-works", to: "https://hedera-bima.gitbook.io/hedera-bima-docs/" },
     { name: "Inspectors", id: "inspectors", to: "/trusted" },
     { name: "Marketplace", id: "marketplace", to: "/hero" },
-    { name: "About", id: "about", to: "/" },
+    { name: "About", id: "about", to: "https://hedera-bima.gitbook.io/hedera-bima-docs/" },
     { name: "Contact", id: "contact", to: "/footer" },
   ];
 

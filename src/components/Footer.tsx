@@ -4,7 +4,7 @@ import { Shield, Twitter, Github, Linkedin, Mail, MapPin, Phone } from "lucide-r
 export const Footer = () => {
   const footerLinks = {
     product: [
-      { label: "How it Works", href: "/header" },
+      { label: "How it Works", href: "https://hedera-bima.gitbook.io/hedera-bima-docs/" },
       { label: "Marketplace", href: "/hero" },
       { label: "Inspectors", href: "/trusted" },
       { label: "Pricing", href: "#" },
@@ -24,10 +24,10 @@ export const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Github, href: "#", label: "Github" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
-    { icon: Mail, href: "#", label: "Email" },
+    { icon: Twitter, href: "https://twitter.com/BBjuniour", label: "Twitter" },
+    { icon: Github, href: "https://github.com/mokayaj857", label: "Github" },
+    { icon: Linkedin, href: "https://www.linkedin.com/in/john-mokaya-3b926a261", label: "LinkedIn" },
+    { icon: Mail, href: "6940.2021@students.ku.ac.ke", label: "Email" },
   ];
 
   const containerVariants = {
