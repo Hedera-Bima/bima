@@ -1,85 +1,12 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
-  Menu, X, Wallet, ChevronRight, Shield, 
+  ChevronRight, Shield, 
   Zap, CheckCircle,
-  MapPin, Coins, Globe, Award, TrendingUp
+  MapPin, Award, TrendingUp
 } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/button";
-import { connectHashpack } from "@/lib/hashpack";
-import { Link, useLocation } from "react-router-dom";
 
 const Index = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [accountId, setAccountId] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<string>("home");
-  const location = useLocation();
-
-  const navLinks = [
-    { name: "Home", id: "home", to: "/" },
-    { name: "Marketplace", id: "marketplace", to: "/marketplace" },
-    { name: "Sell Land", id: "sell-land", to: "/sell-land" },
-    { name: "Inspectors", id: "inspectors", to: "/inspectors" },
-    { name: "How It Works", id: "how-it-works", to: "/how-it-works" },
-  ];
-
-  // Track active link based on current path
-  useEffect(() => {
-    const pathToId: Record<string, string> = {
-      "/home": "home",
-      "/how-it-works": "how-it-works",
-      "/inspectors": "inspectors",
-      "/hero": "marketplace",
-      "/": "about",
-      "/layout": "contact",
-    };
-    const id = pathToId[location.pathname];
-    if (id) setActiveSection(id);
-  }, [location.pathname]);
-
-  const handleConnect = async () => {
-    if (isConnecting) return;
-    try {
-      setIsConnecting(true);
-      const { accountIds } = await connectHashpack('testnet');
-      if (accountIds && accountIds.length > 0) {
-        setAccountId(accountIds[0]);
-      }
-    } catch (e) {
-      console.error('Failed to connect to HashPack:', e);
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-
-
-  useEffect(() => {
-    const ids = navLinks.map(l => l.id);
-    const observers: IntersectionObserver[] = [];
-
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setActiveSection(id);
-            }
-          });
-        },
-        { root: null, rootMargin: "-40% 0px -55% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-
-    return () => observers.forEach(o => o.disconnect());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const solutions = [
     {
@@ -102,26 +29,6 @@ const Index = () => {
     },
   ];
 
-  const participants = [
-    {
-      icon: MapPin,
-      title: "Land Sellers",
-      description: "List property with documents, track verification progress",
-      action: "Create Listing"
-    },
-    {
-      icon: Globe,
-      title: "Land Buyers",
-      description: "Browse verified listings, purchase with confidence",
-      action: "Explore Marketplace"
-    },
-    {
-      icon: Coins,
-      title: "Trusted Inspectors",
-      description: "Chiefs, surveyors, land officers earn reputation NFTs",
-      action: "Join Network"
-    },
-  ];
 
   return (
     <div id="home" className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 text-foreground overflow-hidden">
@@ -362,12 +269,181 @@ const Index = () => {
           </motion.div>
 
 
+          {/* How It Works Section */}
+          <motion.div
+            className="mb-20"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.8 }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">How BIMA Works</span>
+            </h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
+              <span className="text-foreground">Three simple steps to secure, transparent land transactions</span>
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              <motion.div
+                className="group relative"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.0 }}
+                whileHover={{ y: -8 }}
+              >
+                <div className="relative p-8 rounded-2xl bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-green-500/50 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-green-500/20">
+                  {/* Glowing background effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  {/* Step number with enhanced design */}
+                  <div className="relative mx-auto w-24 h-24 mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-primary rounded-full blur-md opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                    <div className="relative flex items-center justify-center w-full h-full bg-gradient-to-br from-green-500 via-green-500 to-primary rounded-full shadow-lg group-hover:shadow-xl group-hover:shadow-green-500/40 transition-all duration-300">
+                      <span className="text-3xl font-black text-background drop-shadow-sm">1</span>
+                    </div>
+                    {/* Animated ring */}
+                    <div className="absolute inset-0 rounded-full border-2 border-green-500/30 group-hover:border-green-500/60 transition-colors animate-pulse"></div>
+                  </div>
+                  
+                  <div className="relative z-10 text-center">
+                    <h3 className="text-xl font-bold mb-4 text-foreground group-hover:text-green-400 transition-colors">List Your Property</h3>
+                    <p className="text-muted-foreground leading-relaxed">Upload land documents and create a verified listing on the blockchain marketplace with complete transparency</p>
+                    
+                    {/* Feature badge */}
+                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-xs font-semibold text-green-400">
+                      <MapPin className="w-3 h-3" />
+                      Document Upload
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="group relative"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.1 }}
+                whileHover={{ y: -8 }}
+              >
+                <div className="relative p-8 rounded-2xl bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-green-500/50 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-green-500/20">
+                  {/* Glowing background effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  {/* Step number with enhanced design */}
+                  <div className="relative mx-auto w-24 h-24 mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-primary rounded-full blur-md opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                    <div className="relative flex items-center justify-center w-full h-full bg-gradient-to-br from-green-500 via-green-500 to-primary rounded-full shadow-lg group-hover:shadow-xl group-hover:shadow-green-500/40 transition-all duration-300">
+                      <span className="text-3xl font-black text-background drop-shadow-sm">2</span>
+                    </div>
+                    {/* Animated ring */}
+                    <div className="absolute inset-0 rounded-full border-2 border-green-500/30 group-hover:border-green-500/60 transition-colors animate-pulse"></div>
+                  </div>
+                  
+                  <div className="relative z-10 text-center">
+                    <h3 className="text-xl font-bold mb-4 text-foreground group-hover:text-green-400 transition-colors">Community Verification</h3>
+                    <p className="text-muted-foreground leading-relaxed">Trusted inspectors validate ownership and property details through multi-signature consensus protocols</p>
+                    
+                    {/* Feature badge */}
+                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-xs font-semibold text-green-400">
+                      <Award className="w-3 h-3" />
+                      Multi-Sig Consensus
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="group relative"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.2 }}
+                whileHover={{ y: -8 }}
+              >
+                <div className="relative p-8 rounded-2xl bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-green-500/50 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-green-500/20">
+                  {/* Glowing background effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  {/* Step number with enhanced design */}
+                  <div className="relative mx-auto w-24 h-24 mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-primary rounded-full blur-md opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                    <div className="relative flex items-center justify-center w-full h-full bg-gradient-to-br from-green-500 via-green-500 to-primary rounded-full shadow-lg group-hover:shadow-xl group-hover:shadow-green-500/40 transition-all duration-300">
+                      <span className="text-3xl font-black text-background drop-shadow-sm">3</span>
+                    </div>
+                    {/* Animated ring */}
+                    <div className="absolute inset-0 rounded-full border-2 border-green-500/30 group-hover:border-green-500/60 transition-colors animate-pulse"></div>
+                  </div>
+                  
+                  <div className="relative z-10 text-center">
+                    <h3 className="text-xl font-bold mb-4 text-foreground group-hover:text-green-400 transition-colors">Secure Transaction</h3>
+                    <p className="text-muted-foreground leading-relaxed">Complete instant, fraud-proof transactions with automated escrow and seamless title transfer</p>
+                    
+                    {/* Feature badge */}
+                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-xs font-semibold text-green-400">
+                      <CheckCircle className="w-3 h-3" />
+                      Smart Escrow
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Trust Indicators */}
+          <motion.div
+            className="mb-20"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.3 }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
+              <span className="text-foreground">Why Choose BIMA?</span>
+            </h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+              <motion.div
+                className="text-center p-6 rounded-xl bg-card/50 border border-border/50"
+                whileHover={{ scale: 1.05 }}
+                transition={{ delay: 2.4 }}
+              >
+                <div className="text-3xl font-black text-primary mb-2">100%</div>
+                <div className="text-sm text-muted-foreground">Fraud Prevention</div>
+              </motion.div>
+              
+              <motion.div
+                className="text-center p-6 rounded-xl bg-card/50 border border-border/50"
+                whileHover={{ scale: 1.05 }}
+                transition={{ delay: 2.5 }}
+              >
+                <div className="text-3xl font-black text-accent mb-2">5min</div>
+                <div className="text-sm text-muted-foreground">Transaction Time</div>
+              </motion.div>
+              
+              <motion.div
+                className="text-center p-6 rounded-xl bg-card/50 border border-border/50"
+                whileHover={{ scale: 1.05 }}
+                transition={{ delay: 2.6 }}
+              >
+                <div className="text-3xl font-black text-green-400 mb-2">24/7</div>
+                <div className="text-sm text-muted-foreground">Global Access</div>
+              </motion.div>
+              
+              <motion.div
+                className="text-center p-6 rounded-xl bg-card/50 border border-border/50"
+                whileHover={{ scale: 1.05 }}
+                transition={{ delay: 2.7 }}
+              >
+                <div className="text-3xl font-black text-blue-400 mb-2">0%</div>
+                <div className="text-sm text-muted-foreground">Hidden Fees</div>
+              </motion.div>
+            </div>
+          </motion.div>
+
           {/* Impact Metrics */}
           <motion.div
             className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2.4 }}
+            transition={{ delay: 2.8 }}
           >
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-400" />
