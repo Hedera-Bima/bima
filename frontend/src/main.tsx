@@ -4,11 +4,11 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import HowItWorks from './components/HowItWorks';
 import Landing from './components/Landing';
 import Hero from './components/Hero';
-import Wallet from './components/Wallet';
 import Layout from './components/Layout';
 import { TrustedInspectors } from './components/TrustedInspectors';
 import InspectorDashboard from './components/InspectorDashboard';
 import SellerDashboard from './components/SellerDashboard';
+import LandDetails from './components/LandDetails';
 
 import './index.css';
 
@@ -35,6 +35,10 @@ const router = createBrowserRouter([
   {
     path: '/inspector-dashboard',
     element: <Layout showHeader><InspectorDashboard /></Layout>,
+  },
+  {
+    path: '/land/:landId',
+    element: <Layout showHeader><LandDetails landId="" /></Layout>,
   },
   // How it works
   {

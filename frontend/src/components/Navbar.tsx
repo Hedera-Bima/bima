@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Award, FileText, BarChart3 } from 'lucide-react';
+import { MapPin, Award, BarChart3 } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -9,7 +9,6 @@ const Navbar: React.FC = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: null },
     { path: '/marketplace', label: 'Marketplace', icon: MapPin },
-    { path: '/sell-land', label: 'Sell Land', icon: FileText },
     { path: '/inspectors', label: 'Inspectors', icon: Award },
     { path: '/how-it-works', label: 'How It Works', icon: null },
     { path: '/ecosystem', label: 'Ecosystem', icon: BarChart3 }
