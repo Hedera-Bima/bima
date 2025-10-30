@@ -279,7 +279,7 @@ const SellLandContent = () => {
                     <select 
                       value={formData.landType}
                       onChange={(e) => handleInputChange('landType', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none text-white [&>option]:text-black"
                     >
                       <option value="">Select land type</option>
                       <option value="residential">Residential</option>
@@ -314,7 +314,7 @@ const SellLandContent = () => {
                     <select 
                       value={formData.accessibility}
                       onChange={(e) => handleInputChange('accessibility', e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none text-white [&>option]:text-black"
                     >
                       <option value="">Select access type</option>
                       <option value="tarmac">Tarmac Road</option>
