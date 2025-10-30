@@ -2,28 +2,28 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Menu, X, Wallet, ChevronRight, Shield, 
-  Zap, Lock, TrendingUp, Users, CheckCircle 
+  Zap, CheckCircle,
+  MapPin, Coins, Globe, Award, TrendingUp
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { connectHashpack } from "@/lib/hashpack";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string>("home");
-  const navigate = useNavigate();
   const location = useLocation();
 
   const navLinks = [
-    { name: "Home", id: "home", to: "/home" },
-    { name: "How It Works", id: "how-it-works", to: "https://hedera-bima.gitbook.io/hedera-bima-docs/" },
-    { name: "Inspectors", id: "inspectors", to: "/trusted" },
-    { name: "Marketplace", id: "marketplace", to: "/hero" },
-    { name: "About", id: "about", to: "https://hedera-bima.gitbook.io/hedera-bima-docs/" },
-    { name: "Contact", id: "contact", to: "/footer" },
+    { name: "Home", id: "home", to: "/" },
+    { name: "Marketplace", id: "marketplace", to: "/marketplace" },
+    { name: "Sell Land", id: "sell-land", to: "/sell-land" },
+    { name: "Inspectors", id: "inspectors", to: "/inspectors" },
+    { name: "How It Works", id: "how-it-works", to: "/how-it-works" },
+    { name: "Ecosystem", id: "ecosystem", to: "/ecosystem" },
   ];
 
   // Track active link based on current path
@@ -55,20 +55,7 @@ const Index = () => {
     }
   };
 
-  const handleNavClick = (id: string) => {
-    // Kept for potential in-page sections; not used by header links anymore
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
 
-  const handleNavKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, id: string) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleNavClick(id);
-    }
-  };
 
   useEffect(() => {
     const ids = navLinks.map(l => l.id);
@@ -95,21 +82,45 @@ const Index = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const features = [
+  const solutions = [
     {
       icon: Shield,
-      title: "Hedera Security",
-      description: "Immutable on-chain records",
+      title: "Tokenized Land Titles",
+      description: "NFTs on Hedera represent immutable ownership proof",
+      benefit: "Eliminates fraud"
+    },
+    {
+      icon: Award,
+      title: "Multi-Sig Verification",
+      description: "Trusted inspectors validate through blockchain consensus",
+      benefit: "Community trust"
     },
     {
       icon: Zap,
-      title: "Instant Settlement",
-      description: "Lightning-fast payments and settlement",
+      title: "Smart Escrow",
+      description: "Automated payments upon verified title transfer",
+      benefit: "Instant settlement"
+    },
+  ];
+
+  const participants = [
+    {
+      icon: MapPin,
+      title: "Land Sellers",
+      description: "List property with documents, track verification progress",
+      action: "Create Listing"
     },
     {
-      icon: Lock,
-      title: "Smart Contracts",
-      description: "Automated trust & escrow",
+      icon: Globe,
+      title: "Land Buyers",
+      description: "Browse verified listings, purchase with confidence",
+      action: "Explore Marketplace"
+    },
+    {
+      icon: Coins,
+      title: "Trusted Inspectors",
+      description: "Chiefs, surveyors, land officers earn reputation NFTs",
+      action: "Join Network"
     },
   ];
 
@@ -338,7 +349,7 @@ const Index = () => {
             transition={{ type: "spring", duration: 1, delay: 0.2 }}
             whileHover={{ scale: 1.05 }}
           >
-            <Lock className="w-5 h-5 text-primary" />
+            <Shield className="w-8 h-8 text-accent" />
             <span className="text-sm font-semibold text-primary tracking-wider uppercase">
               Powered by Hedera
             </span>
@@ -360,7 +371,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mb-8"
+            className="mb-12"
           >
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight">
               <motion.span
@@ -374,10 +385,10 @@ const Index = () => {
                   ease: "linear",
                 }}
               >
-                Land Ownership
+                BIMA
               </motion.span>
-              <br />
-              <span className="text-foreground">Reinvented</span>
+              <br className="leading-none" />
+              <span className="text-foreground text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-none">Decentralized Land Marketplace</span>
             </h1>
 
             <motion.p
@@ -386,113 +397,183 @@ const Index = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              with Trust, Speed, and On-Chain Security
+              Trust • Speed • On-Chain Security
             </motion.p>
 
             <motion.p
-              className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
+              className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
             >
-              Bima connects buyers, sellers, and inspectors using Hedera's secure public ledger
+              Secure land transactions with blockchain-verified ownership
             </motion.p>
+
           </motion.div>
 
           {/* CTA Buttons */}
           <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16"
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-          >
-                  <Link to="/hero">
-            <motion.button
-              className="group relative px-8 py-4 bg-gradient-to-r from-primary to-accent text-background font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg shadow-[0_0_30px_rgba(59,130,246,0.5)]"
-              whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(59,130,246,0.7)" }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-accent to-primary"
-                initial={{ x: "100%" }}
-                whileHover={{ x: "0%" }}
-                transition={{ duration: 0.3 }}
-              />
-              <TrendingUp className="w-6 h-6 relative z-10" />
-              <span className="relative z-10">Explore Marketplace</span>
-              <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
-          </Link>
-          <Link to="/wallet">
-            <motion.button
-              className="group px-8 py-4 bg-secondary/50 backdrop-blur-sm text-foreground font-bold rounded-lg border-2 border-primary/30 hover:border-primary hover:bg-secondary transition-all flex items-center gap-3 text-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Users className="w-6 h-6" />
-              <span>Sell-Land</span>
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
-            </Link>
-          
-          </motion.div>
-
-          {/* Features Grid */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
-            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1 }}
           >
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                className="group relative p-6 rounded-xl bg-secondary/40 backdrop-blur-sm border border-border/50 hover:border-primary/60 transition-all hover:shadow-[0_20px_60px_rgba(99,102,241,0.25)]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 + index * 0.1 }}
-                whileHover={{ 
-                  y: -5,
-                  boxShadow: "0 20px 40px rgba(59,130,246,0.2)"
-                }}
+            <Link to="/marketplace">
+              <motion.button
+                className="group relative px-8 py-4 bg-gradient-to-r from-primary to-accent text-background font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+                whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(59,130,246,0.7)" }}
+                whileTap={{ scale: 0.95 }}
               >
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute inset-0 bg-gradient-to-r from-accent to-primary"
+                  initial={{ x: "100%" }}
+                  whileHover={{ x: "0%" }}
+                  transition={{ duration: 0.3 }}
                 />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-primary/50 via-fuchsia-500/50 to-accent/50 z-10 opacity-80" />
-                <div className="relative z-10">
-                  <motion.div
-                    className="inline-flex p-3 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 mb-4"
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <feature.icon className="w-6 h-6 text-primary" />
-                  </motion.div>
-                  <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </div>
-              </motion.div>
-            ))}
+                <TrendingUp className="w-6 h-6 relative z-10" />
+                <span className="relative z-10">Explore Marketplace</span>
+                <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
+            <Link to="/sell-land">
+              <motion.button
+                className="group px-8 py-4 bg-secondary/50 backdrop-blur-sm text-foreground font-bold rounded-lg border-2 border-primary/30 hover:border-primary hover:bg-secondary transition-all flex items-center gap-3 text-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <MapPin className="w-6 h-6" />
+                <span>List Your Land</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
+            <Link to="/inspectors">
+              <motion.button
+                className="group px-8 py-4 bg-gradient-to-r from-accent/20 to-primary/20 backdrop-blur-sm text-foreground font-bold rounded-lg border-2 border-accent/30 hover:border-accent hover:bg-accent/10 transition-all flex items-center gap-3 text-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Award className="w-6 h-6" />
+                <span>Join as Inspector</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
           </motion.div>
 
-          {/* Trust Indicators */}
+          {/* Key Features - Keep the green cards appearance */}
+          <motion.div
+            className="mb-20"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              <span className="text-green-400">Key Features</span>
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {solutions.map((solution, index) => (
+                <motion.div
+                  key={solution.title}
+                  className="group relative p-6 rounded-xl bg-green-500/10 backdrop-blur-sm border border-green-500/30 hover:border-green-400/60 transition-all hover:shadow-[0_20px_60px_rgba(34,197,94,0.25)]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.4 + index * 0.1 }}
+                  whileHover={{ 
+                    y: -5,
+                    boxShadow: "0 20px 40px rgba(34,197,94,0.2)"
+                  }}
+                >
+                  <div className="relative z-10">
+                    <motion.div
+                      className="inline-flex p-3 rounded-lg bg-green-500/20 mb-4"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <solution.icon className="w-6 h-6 text-green-400" />
+                    </motion.div>
+                    <h3 className="text-lg font-bold mb-2 text-green-300">{solution.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">{solution.description}</p>
+                    <div className="text-xs font-semibold text-green-400 bg-green-500/20 px-2 py-1 rounded-full inline-block">
+                      ✓ {solution.benefit}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Ecosystem Participants */}
+          <motion.div
+            className="mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.0 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Ecosystem Participants</span>
+            </h2>
+            <p className="text-lg text-muted-foreground text-center max-w-3xl mx-auto mb-12">
+              BIMA connects all stakeholders in a transparent, trustworthy land ownership ecosystem
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {participants.map((participant, index) => (
+                <motion.div
+                  key={participant.title}
+                  className="group relative p-6 rounded-xl bg-secondary/40 backdrop-blur-sm border border-border/50 hover:border-primary/60 transition-all hover:shadow-[0_20px_60px_rgba(99,102,241,0.25)]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2.1 + index * 0.1 }}
+                  whileHover={{ 
+                    y: -5,
+                    boxShadow: "0 20px 40px rgba(59,130,246,0.2)"
+                  }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                  />
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-primary/50 via-fuchsia-500/50 to-accent/50 z-10 opacity-80" />
+                  <div className="relative z-10">
+                    <motion.div
+                      className="inline-flex p-3 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 mb-4"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <participant.icon className="w-6 h-6 text-primary" />
+                    </motion.div>
+                    <h3 className="text-lg font-bold mb-2">{participant.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">{participant.description}</p>
+                    <div className="text-xs font-semibold text-primary bg-primary/20 px-3 py-1 rounded-full inline-block">
+                      {participant.action}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Impact Metrics */}
           <motion.div
             className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.4 }}
+            transition={{ delay: 2.4 }}
           >
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-accent" />
-              <span>10,000+ Properties Listed</span>
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <span>Eliminates Land Fraud</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-blue-400" />
+              <span>Minutes vs Months</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-purple-400" />
+              <span>Community-Verified Trust</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-accent" />
-              <span>500+ Verified Inspectors</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-accent" />
-              <span>99.9% Transaction Success</span>
+              <span>Carbon-Negative Network</span>
             </div>
           </motion.div>
         </div>
