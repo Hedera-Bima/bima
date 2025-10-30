@@ -214,6 +214,8 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
  See the `LICENSE` file for full details.
 
 ---
+(https://docs.google.com/presentation/d/19XAMq9CWq1vPXO7_g30hTJEL3lTDjkFKOXC3W-ZMddA/edit?usp=sharing)
+
 
 
 
