@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, MapPin, DollarSign, FileText, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
 import { api } from '../lib/api';
 
 interface FormData {
@@ -148,15 +146,15 @@ export const ListLandForm = () => {
           <div>
             <Label htmlFor="size">Land Size (in acres)</Label>
             <div className="relative">
-              <Input
+              <input
                 id="size"
                 name="size"
                 type="text"
                 required
                 value={formData.size}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(e as any)}
                 placeholder="e.g., 2.5"
-                className="pl-10"
+                className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
@@ -165,15 +163,15 @@ export const ListLandForm = () => {
           <div>
             <Label htmlFor="price">Price (in KES)</Label>
             <div className="relative">
-              <Input
+              <input
                 id="price"
                 name="price"
                 type="text"
                 required
                 value={formData.price}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(e as any)}
                 placeholder="e.g., 5,000,000"
-                className="pl-10"
+                className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
@@ -182,15 +180,15 @@ export const ListLandForm = () => {
           <div>
             <Label htmlFor="location">Location</Label>
             <div className="relative">
-              <Input
+              <input
                 id="location"
                 name="location"
                 type="text"
                 required
                 value={formData.location}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(e as any)}
                 placeholder="e.g., Kiambu, Limuru"
-                className="pl-10"
+                className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
@@ -198,13 +196,13 @@ export const ListLandForm = () => {
 
           <div>
             <Label htmlFor="description">Description</Label>
-            <Textarea
+            <textarea
               id="description"
               name="description"
               value={formData.description}
-              onChange={handleInputChange}
+              onChange={(e) => handleInputChange(e as any)}
               placeholder="Describe your land parcel..."
-              className="min-h-[100px]"
+              className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
         </div>
@@ -214,53 +212,49 @@ export const ListLandForm = () => {
           <div>
             <Label htmlFor="ownershipProof">Ownership Proof (Required)</Label>
             <div className="relative">
-              <Input
+              <input
                 id="ownershipProof"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => handleFileUpload(e, 'ownershipProof')}
+                onChange={(e) => handleFileUpload(e as any, 'ownershipProof')}
                 required={!files.ownershipProof}
-                className="pl-10"
+                className="pl-10 w-full"
               />
               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
             {files.ownershipProof && (
-              <p className="text-sm text-muted-foreground mt-1">
-                ✓ {files.ownershipProof.name}
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">✓ {files.ownershipProof.name}</p>
             )}
           </div>
 
           <div>
             <Label htmlFor="surveyMap">Survey Map (Required)</Label>
             <div className="relative">
-              <Input
+              <input
                 id="surveyMap"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => handleFileUpload(e, 'surveyMap')}
+                onChange={(e) => handleFileUpload(e as any, 'surveyMap')}
                 required={!files.surveyMap}
-                className="pl-10"
+                className="pl-10 w-full"
               />
               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
             {files.surveyMap && (
-              <p className="text-sm text-muted-foreground mt-1">
-                ✓ {files.surveyMap.name}
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">✓ {files.surveyMap.name}</p>
             )}
           </div>
 
           <div>
             <Label htmlFor="additionalDocs">Additional Documents (Optional)</Label>
             <div className="relative">
-              <Input
+              <input
                 id="additionalDocs"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => handleFileUpload(e, 'additional')}
+                onChange={(e) => handleFileUpload(e as any, 'additional')}
                 multiple
-                className="pl-10"
+                className="pl-10 w-full"
               />
               <Upload className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
@@ -276,35 +270,22 @@ export const ListLandForm = () => {
 
         {/* Error and Success Messages */}
         {error && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-destructive text-sm"
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-destructive text-sm">
             {error}
           </motion.p>
         )}
         {success && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-green-500 text-sm"
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-500 text-sm">
             {success}
           </motion.p>
         )}
 
         {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full"
-        >
+        <Button type="submit" disabled={isSubmitting} className="w-full">
           {isSubmitting ? (
             'Submitting...'
           ) : (
-            <span className="flex items-center gap-2">
-              List Land Parcel
+            <span className="flex items-center gap-2">List Land Parcel
               <ArrowRight className="w-4 h-4" />
             </span>
           )}
