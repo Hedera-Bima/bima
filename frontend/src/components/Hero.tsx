@@ -435,30 +435,30 @@ export const MarketplacePreview = () => {
             const StatusIcon = status.icon;
 
             return (
-              <motion.div
-                key={listing.id}
-                initial={{ opacity: 0, y: 50, scale: 0.8, rotateY: -25 }}
-                animate={isInView ? { opacity: 1, y: 0, scale: 1, rotateY: 0 } : {}}
-                transition={{
-                  duration: 0.8,
-                  delay: index * 0.2,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
-                whileHover={{
-                  y: -15,
-                  scale: 1.03,
-                  rotateY: 5,
-                  rotateX: -5,
-                  transition: { 
-                    duration: 0.4,
-                    ease: "easeOut"
-                  },
-                }}
-                onHoverStart={() => setHoveredCard(listing.id)}
-                onHoverEnd={() => setHoveredCard(null)}
-                style={{ perspective: 1000 }}
-                className="group relative"
-              >
+              <Link key={listing.id} to={`/land/${listing.id}`} className="block">
+                <motion.div
+                  initial={{ opacity: 0, y: 50, scale: 0.8, rotateY: -25 }}
+                  animate={isInView ? { opacity: 1, y: 0, scale: 1, rotateY: 0 } : {}}
+                  transition={{
+                    duration: 0.8,
+                    delay: index * 0.2,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                  whileHover={{
+                    y: -15,
+                    scale: 1.03,
+                    rotateY: 5,
+                    rotateX: -5,
+                    transition: { 
+                      duration: 0.4,
+                      ease: "easeOut"
+                    },
+                  }}
+                  onHoverStart={() => setHoveredCard(listing.id)}
+                  onHoverEnd={() => setHoveredCard(null)}
+                  style={{ perspective: 1000 }}
+                  className="group relative cursor-pointer h-full"
+                >
                 {/* Animated border gradient */}
                 <motion.div
                   className="absolute -inset-0.5 bg-gradient-to-r from-primary via-purple-500 to-secondary rounded-2xl opacity-0"
@@ -749,30 +749,28 @@ export const MarketplacePreview = () => {
                     </motion.div>
 
                     {/* View Details Button */}
-                    <Link to={`/land/${listing.id}`}>
-                      <motion.button
-                        whileHover={{ 
-                          scale: 1.05,
-                          y: -2,
+                    <motion.div
+                      whileHover={{ 
+                        scale: 1.05,
+                        y: -2,
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      className="relative w-full mt-4 py-3 px-4 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 overflow-hidden transition-all duration-200 hover:bg-primary/90"
+                    >
+                      <span className="relative z-10">View Details</span>
+                      <motion.div
+                        animate={{
+                          x: hoveredCard === listing.id ? [0, 5, 0] : 0,
                         }}
-                        whileTap={{ scale: 0.95 }}
-                        className="relative w-full mt-4 py-3 px-4 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 overflow-hidden transition-all duration-200 hover:bg-primary/90"
+                        transition={{
+                          duration: 0.5,
+                          repeat: hoveredCard === listing.id ? Infinity : 0,
+                        }}
+                        className="relative z-10"
                       >
-                        <span className="relative z-10">View Details</span>
-                        <motion.div
-                          animate={{
-                            x: hoveredCard === listing.id ? [0, 5, 0] : 0,
-                          }}
-                          transition={{
-                            duration: 0.5,
-                            repeat: hoveredCard === listing.id ? Infinity : 0,
-                          }}
-                          className="relative z-10"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </motion.div>
-                      </motion.button>
-                    </Link>
+                        <ExternalLink className="w-4 h-4" />
+                      </motion.div>
+                    </motion.div>
                   </div>
 
                   {/* Bottom glow effect */}
@@ -783,65 +781,82 @@ export const MarketplacePreview = () => {
                     }}
                     transition={{ duration: 0.5 }}
                   />
+
+                  {/* Floating particles */}
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 bg-primary rounded-full"
+                      animate={{
+                        x: [
+                          Math.random() * 100,
+                          Math.random() * 100,
+                          Math.random() * 100,
+                          Math.random() * 100,
+                        ],
+                        y: [
+                          Math.random() * 100,
+                          Math.random() * 100,
+                          Math.random() * 100,
+                          Math.random() * 100,
+                        ],
+                        rotate: [0, 180, 360],
+                        scale: [0, 1, 0],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        delay: i * 0.5,
+                      }}
+                    />
+                  ))}
+
+                  {/* Ripple effect */}
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <motion.div
+                      key={`ripple-${i}`}
+                      className="absolute inset-0 border border-primary rounded-2xl"
+                      animate={{
+                        scale: hoveredCard === listing.id ? [1, 1.5, 2] : 1,
+                        opacity: hoveredCard === listing.id ? [0.5, 0.2, 0] : 0,
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: hoveredCard === listing.id ? Infinity : 0,
+                        delay: i * 0.3,
+                      }}
+                    />
+                  ))}
+
+                  {/* Energy orbs */}
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <motion.div
+                      key={`orb-${i}`}
+                      className="absolute w-2 h-2 bg-gradient-to-r from-primary to-secondary rounded-full blur-sm"
+                      animate={{
+                        x: [
+                          Math.sin((i * Math.PI) / 2) * 100,
+                          Math.sin((i * Math.PI) / 2 + Math.PI) * 100,
+                          Math.sin((i * Math.PI) / 2) * 100,
+                        ],
+                        y: [
+                          Math.cos((i * Math.PI) / 2) * 100,
+                          Math.cos((i * Math.PI) / 2 + Math.PI) * 100,
+                          0,
+                        ],
+                        opacity: [0, 0.8, 0.8, 0],
+                        scale: [0, 1, 1, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: i * 0.2,
+                      }}
+                    />
+                  ))}
                 </div>
-
-                {/* Floating particles on hover */}
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={`card-particle-${i}`}
-                    className="absolute w-1.5 h-1.5 rounded-full"
-                    style={{
-                      left: `${15 + i * 15}%`,
-                      top: i % 2 === 0 ? "20%" : "80%",
-                      background: `hsl(${260 + i * 20}, 80%, 60%)`,
-                    }}
-                    animate={{
-                      y: hoveredCard === listing.id ? [0, -40, -80] : 0,
-                      opacity: hoveredCard === listing.id ? [0, 1, 0] : 0,
-                      scale: hoveredCard === listing.id ? [0, 1.5, 0] : 0,
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: hoveredCard === listing.id ? Infinity : 0,
-                      delay: i * 0.1,
-                      ease: "easeOut",
-                    }}
-                  />
-                ))}
-
-                {/* Orbital particles */}
-                {hoveredCard === listing.id && [...Array(4)].map((_, i) => (
-                  <motion.div
-                    key={`orbital-${i}`}
-                    className="absolute w-2 h-2 bg-primary rounded-full"
-                    style={{
-                      top: "50%",
-                      left: "50%",
-                    }}
-                    animate={{
-                      x: [
-                        0,
-                        Math.cos((i * Math.PI) / 2) * 100,
-                        Math.cos((i * Math.PI) / 2 + Math.PI) * 100,
-                        0,
-                      ],
-                      y: [
-                        0,
-                        Math.sin((i * Math.PI) / 2) * 100,
-                        Math.sin((i * Math.PI) / 2 + Math.PI) * 100,
-                        0,
-                      ],
-                      opacity: [0, 0.8, 0.8, 0],
-                      scale: [0, 1, 1, 0],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      delay: i * 0.2,
-                    }}
-                  />
-                ))}
-              </motion.div>
+                </motion.div>
+              </Link>
             );
           })}
           </div>
