@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en",
+  "useGitignore": true,
+  "ignorePaths": [
+    "node_modules/**",
+    "build/**",
+    "dist/**",
+    "public/**",
+    "package-lock.json"
+  ],
+  "words": [
+    "hashpack",
+    "hashconnect",
+    "HashConnect",
+    "HashPack",
+    "hedera",
+    "dapp",
+    "pairing",
+    "pairingData",
+    "pairingTopic",
+    "testnet",
+    "mainnet",
+    "previewnet",
+    "Bima"
+  ]
+}
