@@ -209,8 +209,11 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 | Irene Nditi |Smart contract Developer|https://github.com/Irenenditi |
 
 ## 📄 License
+
 - This project is licensed under the MIT License.
- See the LICENSE file for full details.
+ See the `LICENSE` file for full details.
+
+---
 
 
 
