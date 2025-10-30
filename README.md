@@ -1,36 +1,36 @@
-#🏞️ BIMA: Decentralized Land Marketplace
+# 🏞️ BIMA: Decentralized Land Marketplace
 Track: Web3 for Social Impact / Real-World Asset Tokenization
 Status: ✅ Active  Build: Passing  License: MIT
 
-##🌍 Overview
+## 🌍 Overview
 
 BIMA is a decentralized marketplace for buying, selling, and verifying land ownership using blockchain technology.
 Deployed on the Hedera public ledger, it leverages tokenized land titles (NFTs), Decentralized Identifiers (DIDs), and smart contracts to bring trust, transparency, and speed to land transactions — especially in regions where property systems are opaque and prone to fraud.
 
 >🌐 Live Demo:
 
-##✨ Key Features
+## ✨ Key Features
 
-###🏠 Land Marketplace & Discovery
+### 🏠 Land Marketplace & Discovery
 - **Browse verified land listings with price, size, and location.
 - **Filter by verified status and inspector credibility.
 -** On-chain proof of authenticity for each listing.
 
-###🧾 Land Verification
+### 🧾 Land Verification
 -**Dual-signature (multi-sig) verification by Chiefs, Surveyors, and Land Officers.
 -**Immutable on-chain logs of all approvals and submissions.
 -**Reputation NFTs (Bronze, Silver, Gold) for inspector performance.
 
-###💰 Escrow & Payment Settlement
+### 💰 Escrow & Payment Settlement
 - **Secure escrow smart contract ensures fair payments — HBAR is released only after title transfer
 - **Automated logic through Hedera smart contracts.
 - **Fully auditable transactions via Hedera HashScan.
 
-###🪙 Tokenized Land Titles
+### 🪙 Tokenized Land Titles
 - **Land ownership is represented as NFTs minted on the Hedera Token Service (HTS).
 - **Transferable, verifiable, and publicly traceable.
 
-### ⚙️ Tech Stack
+###  ⚙️ Tech Stack
 | Layer | Technology |
 |-------|------------|
 | Frontend | React (Next.js), Tailwind CSS, Framer Motion |
@@ -42,7 +42,7 @@ Deployed on the Hedera public ledger, it leverages tokenized land titles (NFTs),
 | Payments | HBAR Escrow Smart Contracts | 
 | Data Access | Hedera Mirror Node APIs|
 
-##🏗️ Architecture
+## 🏗️ Architecture
 ```
 
 Frontend (React / Next.js + HashConnect)
@@ -68,42 +68,42 @@ Flow:
 3️⃣ NFT minted on HTS → buyer purchases via wallet.
 4️⃣ Escrow releases payment → ownership transferred → logged on HashScan.
 
-##💡 Hedera Integration Summary
+## 💡 Hedera Integration Summary
 
-###🪙 Hedera Token Service (HTS)
+ ###  Hedera Token Service (HTS)
 - **Used for tokenizing land as NFTs
 Why: Native tokenization, low fees, high speed.
 - **Transactions: TokenCreateTransaction, TokenMintTransaction, TokenTransferTransaction.
   Benefit: Enables low-cost, real-asset trading at scale.
 
-###💬 Hedera Consensus Service (HCS)
+### 💬 Hedera Consensus Service (HCS)
 - **Used for event logging (listings, approvals, transfers).
 Why: Immutable and auditable event history.
 - **Transactions: TopicCreateTransaction, TopicMessageSubmitTransaction.
 Benefit: Eliminates disputes and ensures trust via public ledger transparency.
 
-###⚖️ Smart Contracts
+### ⚖️ Smart Contracts
 - **Used for escrow and verification automation.
  Why: Trustless and transparent settlement.
 - **Transactions: ContractCreateTransaction, ContractExecuteTransaction.
  Benefit: Ensures no funds move unless both parties meet conditions.
 
-###🧮 Economic Justification
+### 🧮 Economic Justification
 **Low Fees**: Hedera’s predictable fees (<$0.001 per tx) make the platform accessible to low-income rural users.
 **Speed**: Finality in seconds enables real-time transactions.
 **Scalability**: High throughput supports large national land registries.
 **Trust**: Transparent and public audit trail reduces corruption and fraud.
 
-##🚀 Quick Start
+## 🚀 Quick Start
 
-###Prerequisites
+### Prerequisites
 - **Node.js ≥ 18
 -**npm or yarn
 -**Hedera testnet account with HBAR
 -**HashPack Wallet
 -**IPFS or Web3.Storage API key
 
-###Installation
+### Installation
 ```
 # Clone repository
 git clone https://github.com/Hedera-Bima/bima.git
@@ -112,7 +112,7 @@ cd bima
 npm install
 ```
 
-###Backend Setup
+### Backend Setup
 ```
 cd backend
 npm install
@@ -120,7 +120,7 @@ npm run start
 ```
 Runs on http://localhost:5000
 
-###Frontend Setup
+### Frontend Setup
 ```
 cd ../frontend
 npm install
@@ -128,7 +128,7 @@ npm run dev
 ```
 Runs on http://localhost:3000
 
-###Environment Variables
+### Environment Variables
 **Create .env or .env.local file in the project root.**
 ```
 HEDERA_ACCOUNT_ID=0.0.xxxx
@@ -142,7 +142,7 @@ IPFS_API_KEY=your_web3storage_api_key
 MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 ```
 
-###🗂️ Project Structure
+### 🗂️ Project Structure
 ```
 /bima
  ├── /frontend          # Next.js React UI
@@ -152,7 +152,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
  └── README.md
 ```
 
-##🧾 Deployed Hedera IDs (Testnet)
+## 🧾 Deployed Hedera IDs (Testnet)
 | Service | ID | Description |
 |---------|----|-------------|
 | Land Title NFT (HTS) | 0.0.5432109 | Represents land parcels |
@@ -162,7 +162,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 | Mirror Node API | https://testnet.mirrornode.hedera.com/api/v1/ | Read-only ledger data |
 (Replace placeholders with live Testnet IDs.)
 
-##🌟 Core Features
+## 🌟 Core Features
 | Feature | Description |
 | --------|-------------|
 | DIDs Integration | Each user has a verifiable decentralized identity |
@@ -171,7 +171,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 | Transparency Layer |All actions visible via HashScan |
 | Reputation NFTs | Soulbound tokens for trusted inspectors |
 
-##🌍 Social & Economic Impact
+## 🌍 Social & Economic Impact
 **🛡️ Anti-Fraud**: Removes document forgery and duplicate titles
 **👩🏽‍🌾 Empowerment**: Recognizes local chiefs/surveyors as verifiers
 **⚡ Efficiency**: From months to minutes for title transfers
@@ -179,7 +179,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 **🤝 Trust**: Bridges traditional land systems with digital security
 
 
-##🧰 .env.sample
+## 🧰 .env.sample
 ```
 # Hedera Configuration
 HEDERA_ACCOUNT_ID=0.0.xxxx
@@ -199,7 +199,7 @@ IPFS_API_KEY=your_web3storage_api_key
 MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 ```
 
-##👥 Team
+## 👥 Team
 
 | Name | Role | Contact |
 |------|------|---------|
@@ -208,7 +208,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 |Joseph Okumu | Back end Developer |https://github.com/JosephOkumu#joseph-okumu |
 | Irene Nditi |Smart contract Developer|https://github.com/Irenenditi |
 
-##📄 License
+## 📄 License
 -**This project is licensed under the MIT License.
  See the LICENSE file for full details.
 
