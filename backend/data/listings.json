@@ -1,0 +1,34 @@
+{
+  "listings": [
+    {
+      "id": "49a7437d-b6ee-4975-b767-38b3252af2aa",
+      "title": "Test Property",
+      "location": "Nairobi, Test Area",
+      "size": "2.5 acres",
+      "price": 45000000,
+      "description": "Test property description",
+      "landType": "residential",
+      "utilities": [],
+      "nearbyAmenities": [],
+      "images": [],
+      "documents": {
+        "titleDeed": null,
+        "surveyReport": null,
+        "taxCertificate": null
+      },
+      "seller": {
+        "name": "Test Seller",
+        "phone": "+254700000000",
+        "email": "test@example.com"
+      },
+      "status": "pending_verification",
+      "verificationStatus": {
+        "documents": "pending",
+        "site": "pending",
+        "legal": "pending"
+      },
+      "createdAt": "2025-10-30T08:09:49.587Z",
+      "updatedAt": "2025-10-30T08:09:49.587Z"
+    }
+  ]
+}
