@@ -5,7 +5,6 @@ import {
   Shield, 
   CheckCircle2, 
   Clock, 
-  AlertTriangle, 
   Sparkles, 
   ExternalLink,
   TrendingUp,
@@ -105,7 +104,6 @@ const buyListings: LandListing[] = [
 
 // Import SellerDashboard component content
 const SellLandContent = () => {
-  const [activeTab, setActiveTab] = useState<'listings' | 'analytics' | 'create'>('create');
   
   const sellerStats = {
     totalListings: 8,
@@ -252,7 +250,6 @@ const SellLandContent = () => {
   );
 };
 
-const sellListings: LandListing[] = [];
 
 const statusConfig = {
   verified: {
@@ -368,7 +365,7 @@ export const MarketplacePreview = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-8 flex items-center justify-center gap-2 mb-8"
+            className="mt-8 flex items-center justify-center gap-6 mb-8"
           >
             <motion.button
               onClick={() => setActiveTab('buy')}
