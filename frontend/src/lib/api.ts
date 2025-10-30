@@ -1,6 +1,6 @@
 import axios from 'axios';
 
- export const API_BASE_URL = 'http://localhost:3000'; // adjust this to your backend URL
+export const API_BASE_URL = 'http://localhost:3000'; // adjust this to your backend URL
 
 export const api = {
   // Land NFT Related
