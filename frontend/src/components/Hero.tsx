@@ -1,6 +1,20 @@
 import { motion, useInView } from "framer-motion";
-import { MapPin, Shield, CheckCircle2, Clock, Eye, ExternalLink, Sparkles, Zap } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState, useRef } from "react";
+import { 
+  MapPin, 
+  Shield, 
+  CheckCircle2, 
+  Clock, 
+  AlertTriangle, 
+  Sparkles, 
+  ExternalLink,
+  TrendingUp,
+  DollarSign,
+  Upload,
+  Download,
+  Zap,
+  Eye
+} from "lucide-react";
 
 interface LandListing {
   id: string;
@@ -38,7 +52,7 @@ const imgBarn = findImageByName("barn") || allAssets[1] || allAssets[0];
 const imgValley = findImageByName("valley") || allAssets[2] || allAssets[0];
 const imgRun = findImageByName("run") || allAssets[3] || allAssets[0];
 
-const listings: LandListing[] = [
+const buyListings: LandListing[] = [
   {
     id: "1",
     location: "Nairobi, Karen",
@@ -89,6 +103,157 @@ const listings: LandListing[] = [
   },
 ];
 
+// Import SellerDashboard component content
+const SellLandContent = () => {
+  const [activeTab, setActiveTab] = useState<'listings' | 'analytics' | 'create'>('create');
+  
+  const sellerStats = {
+    totalListings: 8,
+    activeListings: 3,
+    soldProperties: 2,
+    totalRevenue: "78,500,000 KES",
+    averageVerificationTime: "5.2 days",
+    successRate: 95
+  };
+
+  return (
+    <div className="w-full">
+      {/* Stats Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+      >
+        <div className="p-6 rounded-xl bg-card/40 backdrop-blur-sm border border-border/50">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-blue-500/20">
+              <MapPin className="w-5 h-5 text-blue-400" />
+            </div>
+            <span className="text-sm text-muted-foreground">Total Listings</span>
+          </div>
+          <div className="text-2xl font-bold text-foreground">{sellerStats.totalListings}</div>
+        </div>
+
+        <div className="p-6 rounded-xl bg-card/40 backdrop-blur-sm border border-border/50">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-green-500/20">
+              <TrendingUp className="w-5 h-5 text-green-400" />
+            </div>
+            <span className="text-sm text-muted-foreground">Active Listings</span>
+          </div>
+          <div className="text-2xl font-bold text-foreground">{sellerStats.activeListings}</div>
+        </div>
+
+        <div className="p-6 rounded-xl bg-card/40 backdrop-blur-sm border border-border/50">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-purple-500/20">
+              <DollarSign className="w-5 h-5 text-purple-400" />
+            </div>
+            <span className="text-sm text-muted-foreground">Total Revenue</span>
+          </div>
+          <div className="text-2xl font-bold text-foreground">{sellerStats.totalRevenue}</div>
+        </div>
+
+        <div className="p-6 rounded-xl bg-card/40 backdrop-blur-sm border border-border/50">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-orange-500/20">
+              <Shield className="w-5 h-5 text-orange-400" />
+            </div>
+            <span className="text-sm text-muted-foreground">Success Rate</span>
+          </div>
+          <div className="text-2xl font-bold text-foreground">{sellerStats.successRate}%</div>
+        </div>
+      </motion.div>
+
+      {/* Create Listing Form */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="space-y-8"
+      >
+        <h3 className="text-2xl font-bold">Create New Land Listing</h3>
+
+        <div className="max-w-4xl mx-auto">
+          <div className="p-8 rounded-xl bg-card/40 backdrop-blur-sm border border-border/50">
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Basic Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Property Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter property title"
+                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Location</label>
+                    <input 
+                      type="text" 
+                      placeholder="City, Area/Estate"
+                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Area Size</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., 2.5 acres"
+                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Price (KES)</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., 45,000,000"
+                      className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Documents Upload */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Required Documents</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {['Title Deed', 'Survey Report', 'Tax Certificate'].map((doc) => (
+                    <div key={doc} className="p-4 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 transition-colors cursor-pointer">
+                      <div className="text-center">
+                        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm font-medium">{doc}</p>
+                        <p className="text-xs text-muted-foreground">Click to upload</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 pt-6">
+                <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors">
+                  <Download className="w-4 h-4" />
+                  Save as Draft
+                </button>
+                <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                  <Shield className="w-4 h-4" />
+                  Submit for Verification
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const sellListings: LandListing[] = [];
+
 const statusConfig = {
   verified: {
     label: "Verified",
@@ -117,6 +282,7 @@ export const MarketplacePreview = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
 
   return (
     <section ref={ref} className="relative py-32 overflow-hidden bg-background">
@@ -180,7 +346,7 @@ export const MarketplacePreview = () => {
             className="text-5xl md:text-6xl font-bold mb-6"
           >
             <span className="text-foreground/95">
-              Featured Land Listings
+              {activeTab === 'buy' ? 'Featured Land Listings' : 'Sell Your Land'}
             </span>
           </motion.h2>
 
@@ -191,15 +357,67 @@ export const MarketplacePreview = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-xl text-foreground/85 max-w-2xl mx-auto"
           >
-            Browse verified properties with transparent ownership records secured on Hedera blockchain
+            {activeTab === 'buy' 
+              ? 'Browse verified properties with transparent ownership records secured on Hedera blockchain'
+              : 'Transform your property into a digital asset with blockchain-verified ownership and reach global buyers through our secure marketplace'
+            }
           </motion.p>
+
+          {/* Buy/Sell Toggle Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-8 flex items-center justify-center gap-2 mb-8"
+          >
+            <motion.button
+              onClick={() => setActiveTab('buy')}
+              className={`group relative px-8 py-4 font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg transition-all duration-300 ${
+                activeTab === 'buy'
+                  ? 'bg-gradient-to-r from-primary to-accent text-white shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm'
+                  : 'bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/30'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {activeTab === 'buy' && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "0%" }}
+                  transition={{ duration: 0.3 }}
+                />
+              )}
+              <span className="relative z-10">Buy Land</span>
+            </motion.button>
+            <motion.button
+              onClick={() => setActiveTab('sell')}
+              className={`group relative px-8 py-4 font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg transition-all duration-300 ${
+                activeTab === 'sell'
+                  ? 'bg-gradient-to-r from-primary to-accent text-white shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm'
+                  : 'bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/30'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {activeTab === 'sell' && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "0%" }}
+                  transition={{ duration: 0.3 }}
+                />
+              )}
+              <span className="relative z-10">Sell Land</span>
+            </motion.button>
+          </motion.div>
 
           {/* Decorative lines */}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={isInView ? { scaleX: 1 } : {}}
             transition={{ duration: 1, delay: 0.6 }}
-            className="mt-8 flex items-center justify-center gap-3"
+            className="flex items-center justify-center gap-3"
           >
             <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
             <motion.div
@@ -212,8 +430,9 @@ export const MarketplacePreview = () => {
         </motion.div>
 
         {/* Listings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {listings.map((listing, index) => {
+        {activeTab === 'buy' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {buyListings.map((listing: LandListing, index: number) => {
             const status = statusConfig[listing.verificationStatus];
             const StatusIcon = status.icon;
 
@@ -625,7 +844,10 @@ export const MarketplacePreview = () => {
               </motion.div>
             );
           })}
-        </div>
+          </div>
+        ) : (
+          <SellLandContent />
+        )}
 
         {/* Bottom CTA */}
         <motion.div
