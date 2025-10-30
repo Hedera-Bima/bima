@@ -273,37 +273,43 @@ const Index = () => {
 
               {/* CTA Buttons */}
               <motion.div
-                className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8"
+                className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-8"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.1 }}
               >
-            <Link to="/marketplace">
-              <motion.button
-                className="group relative px-8 py-4 bg-gradient-to-r from-primary to-accent text-background font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg shadow-[0_0_30px_rgba(59,130,246,0.5)]"
-                whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(59,130,246,0.7)" }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-accent to-primary"
-                  initial={{ x: "100%" }}
-                  whileHover={{ x: "0%" }}
-                  transition={{ duration: 0.3 }}
-                />
-                <TrendingUp className="w-6 h-6 relative z-10" />
-                <span className="relative z-10">Explore Marketplace</span>
-                <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-              </motion.button>
-            </Link>
-                <Link to="/sell-land">
+                <Link to="/marketplace">
                   <motion.button
-                    className="group px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-lg border-2 border-white/30 hover:border-white hover:bg-white/20 transition-all flex items-center gap-3 text-lg shadow-lg"
-                    whileHover={{ scale: 1.05 }}
+                    className="group relative px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm"
+                    whileHover={{ scale: 1.05, boxShadow: "0 0 60px rgba(59,130,246,1)" }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <MapPin className="w-6 h-6" />
-                    <span>List Your Land</span>
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "0%" }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <TrendingUp className="w-6 h-6 relative z-10" />
+                    <span className="relative z-10">Explore Marketplace</span>
+                    <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  </motion.button>
+                </Link>
+                <Link to="/sell-land">
+                  <motion.button
+                    className="group relative px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm"
+                    whileHover={{ scale: 1.05, boxShadow: "0 0 60px rgba(59,130,246,1)" }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "0%" }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <MapPin className="w-6 h-6 relative z-10" />
+                    <span className="relative z-10">List Your Land</span>
+                    <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                   </motion.button>
                 </Link>
               </motion.div>
