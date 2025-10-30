@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bima</title>
+    <script>
+      // Prevent flash of incorrect theme on first paint
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var mql = window.matchMedia('(prefers-color-scheme: dark)');
+          var shouldDark = stored ? stored === 'dark' : mql.matches;
+          if (shouldDark) document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
