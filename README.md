@@ -17,18 +17,18 @@ Deployed on the Hedera public ledger, it leverages tokenized land titles (NFTs),
 - On-chain proof of authenticity for each listing.
 
 ### 🧾 Land Verification
--**Dual-signature (multi-sig) verification by Chiefs, Surveyors, and Land Officers.
--**Immutable on-chain logs of all approvals and submissions.
--**Reputation NFTs (Bronze, Silver, Gold) for inspector performance.
+- Dual-signature (multi-sig) verification by Chiefs, Surveyors, and Land Officers.
+- Immutable on-chain logs of all approvals and submissions.
+- Reputation NFTs (Bronze, Silver, Gold) for inspector performance.
 
 ### 💰 Escrow & Payment Settlement
-- **Secure escrow smart contract ensures fair payments — HBAR is released only after title transfer
-- **Automated logic through Hedera smart contracts.
-- **Fully auditable transactions via Hedera HashScan.
+- Secure escrow smart contract ensures fair payments — HBAR is released only after title transfer
+- Automated logic through Hedera smart contracts.
+- Fully auditable transactions via Hedera HashScan.
 
 ### 🪙 Tokenized Land Titles
-- **Land ownership is represented as NFTs minted on the Hedera Token Service (HTS).
-- **Transferable, verifiable, and publicly traceable.
+- Land ownership is represented as NFTs minted on the Hedera Token Service (HTS).
+- Transferable, verifiable, and publicly traceable.
 
 ###  ⚙️ Tech Stack
 | Layer | Technology |
@@ -71,21 +71,21 @@ Flow:
 ## 💡 Hedera Integration Summary
 
  ###  Hedera Token Service (HTS)
-- **Used for tokenizing land as NFTs
+- Used for tokenizing land as NFTs
 Why: Native tokenization, low fees, high speed.
-- **Transactions: TokenCreateTransaction, TokenMintTransaction, TokenTransferTransaction.
+- Transactions: TokenCreateTransaction, TokenMintTransaction, TokenTransferTransaction.
   Benefit: Enables low-cost, real-asset trading at scale.
 
 ### 💬 Hedera Consensus Service (HCS)
-- **Used for event logging (listings, approvals, transfers).
+- Used for event logging (listings, approvals, transfers).
 Why: Immutable and auditable event history.
-- **Transactions: TopicCreateTransaction, TopicMessageSubmitTransaction.
+- Transactions: TopicCreateTransaction, TopicMessageSubmitTransaction.
 Benefit: Eliminates disputes and ensures trust via public ledger transparency.
 
 ### ⚖️ Smart Contracts
-- **Used for escrow and verification automation.
+- Used for escrow and verification automation.
  Why: Trustless and transparent settlement.
-- **Transactions: ContractCreateTransaction, ContractExecuteTransaction.
+- Transactions: ContractCreateTransaction, ContractExecuteTransaction.
  Benefit: Ensures no funds move unless both parties meet conditions.
 
 ### 🧮 Economic Justification
@@ -97,11 +97,11 @@ Benefit: Eliminates disputes and ensures trust via public ledger transparency.
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js ≥ 18
--**npm or yarn
--**Hedera testnet account with HBAR
--**HashPack Wallet
--**IPFS or Web3.Storage API key
+- Node.js ≥ 18
+- npm or yarn
+- Hedera testnet account with HBAR
+- HashPack Wallet
+- IPFS or Web3.Storage API key
 
 ### Installation
 ```
@@ -209,7 +209,7 @@ MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com/api/v1/
 | Irene Nditi |Smart contract Developer|https://github.com/Irenenditi |
 
 ## 📄 License
--**This project is licensed under the MIT License.
+- This project is licensed under the MIT License.
  See the LICENSE file for full details.
 
 
