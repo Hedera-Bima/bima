@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -56,99 +56,192 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'location' | 'documents' | 'history'>('overview');
   const [isLiked, setIsLiked] = useState(false);
+  const [property, setProperty] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - in real app this would come from API based on landId
-  const property = {
-    id: landId,
-    title: "Premium Agricultural Land in Kiambu",
-    location: "Kiambu County, Central Kenya",
-    coordinates: { lat: -1.1719, lng: 36.8315 },
-    price: "45,000,000",
-    currency: "KES",
-    area: "5.2 acres",
-    description: "Exceptional agricultural land with fertile soil, perfect for farming or development. Located in the heart of Kiambu with excellent accessibility and infrastructure.",
-    features: [
-      "Fertile red soil perfect for agriculture",
-      "Access to clean water supply",
-      "Electricity connection available",
-      "All-weather road access",
-      "Fenced perimeter",
-      "Clear title deed"
-    ],
-    ownerDID: "did:hedera:testnet:z9KmF47C1xvVk2D8nQw3...",
-    ownerName: "John Kamau",
-    ownerContact: {
-      phone: "+254 712 345 678",
-      email: "john.kamau@email.com"
-    },
-    verificationStatus: "verified" as const,
-    listedDate: "2024-01-15",
-    lastUpdated: "2024-01-20",
-    views: 234,
-    inspections: 12
-  };
+  // Fetch property data from backend
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:5000/api/listings/${landId}`);
+        
+        if (response.ok) {
+          const listing = await response.json();
+          // Transform backend data to match component expectations
+          setProperty({
+            id: listing.id,
+            title: listing.title,
+            location: listing.location,
+            coordinates: { lat: -1.1719, lng: 36.8315 }, // Default coordinates
+            price: listing.price ? listing.price.toString() : "0",
+            currency: "KES",
+            area: listing.size,
+            description: listing.description,
+            features: [
+              listing.landType && `Land Type: ${listing.landType}`,
+              listing.zoning && `Zoning: ${listing.zoning}`,
+              listing.utilities && `Utilities: ${listing.utilities}`,
+              listing.accessibility && `Road Access: ${listing.accessibility}`,
+              listing.nearbyAmenities && `Nearby Amenities: ${listing.nearbyAmenities}`
+            ].filter(Boolean),
+            ownerDID: "did:hedera:testnet:z9KmF47C1xvVk2D8nQw3...",
+            ownerName: listing.seller?.name || "Property Owner",
+            ownerContact: {
+              phone: listing.seller?.phone || "Contact via platform",
+              email: listing.seller?.email || "Contact via platform"
+            },
+            verificationStatus: listing.status === 'verified' ? 'verified' : listing.status === 'pending_verification' ? 'pending' : 'unverified',
+            listedDate: new Date(listing.createdAt).toLocaleDateString(),
+            lastUpdated: new Date(listing.updatedAt || listing.createdAt).toLocaleDateString(),
+            views: Math.floor(Math.random() * 500) + 50, // Mock views
+            inspections: Math.floor(Math.random() * 20) + 1, // Mock inspections
+            images: listing.images || [],
+            documents: listing.documents || []
+          });
+        } else {
+          // Fallback to dummy data if listing not found in backend
+          setProperty({
+            id: landId,
+            title: "Premium Agricultural Land in Kiambu",
+            location: "Kiambu County, Central Kenya",
+            coordinates: { lat: -1.1719, lng: 36.8315 },
+            price: "45,000,000",
+            currency: "KES",
+            area: "5.2 acres",
+            description: "Exceptional agricultural land with fertile soil, perfect for farming or development. Located in the heart of Kiambu with excellent accessibility and infrastructure.",
+            features: [
+              "Fertile red soil perfect for agriculture",
+              "Access to clean water supply",
+              "Electricity connection available",
+              "All-weather road access",
+              "Fenced perimeter",
+              "Clear title deed"
+            ],
+            ownerDID: "did:hedera:testnet:z9KmF47C1xvVk2D8nQw3...",
+            ownerName: "John Kamau",
+            ownerContact: {
+              phone: "+254 712 345 678",
+              email: "john.kamau@email.com"
+            },
+            verificationStatus: "verified" as const,
+            listedDate: "2024-01-15",
+            lastUpdated: "2024-01-20",
+            views: 234,
+            inspections: 12,
+            images: [],
+            documents: []
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch property:', err);
+        setError('Failed to load property details');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const images: PropertyImage[] = [
-    {
-      id: "1",
-      url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop",
-      title: "Main View",
-      description: "Overview of the entire property"
-    },
-    {
-      id: "2", 
-      url: "https://images.unsplash.com/photo-1574263867128-a3d5c1b1deae?w=800&h=600&fit=crop",
-      title: "Soil Quality",
-      description: "Rich, fertile soil perfect for agriculture"
-    },
-    {
-      id: "3",
-      url: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop", 
-      title: "Access Road",
-      description: "Well-maintained access road"
-    },
-    {
-      id: "4",
-      url: "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=800&h=600&fit=crop",
-      title: "Boundary View",
-      description: "Clear property boundaries"
-    }
-  ];
+    fetchProperty();
+  }, [landId]);
 
-  const documents: Document[] = [
-    {
-      id: "1",
-      name: "Title Deed Certificate",
-      type: "title-deed",
-      verified: true,
-      uploadDate: "2024-01-10",
-      size: "2.4 MB"
-    },
-    {
-      id: "2", 
-      name: "Survey Report 2024",
-      type: "survey",
-      verified: true,
-      uploadDate: "2024-01-12",
-      size: "5.1 MB"
-    },
-    {
-      id: "3",
-      name: "Tax Compliance Certificate",
-      type: "certificate", 
-      verified: true,
-      uploadDate: "2024-01-08",
-      size: "1.2 MB"
-    },
-    {
-      id: "4",
-      name: "Professional Inspection Report",
-      type: "inspection",
-      verified: true,
-      uploadDate: "2024-01-18",
-      size: "3.7 MB"
-    }
-  ];
+  // Transform backend images or use fallback
+  const images: PropertyImage[] = property?.images?.length > 0 
+    ? property.images.map((img: any, index: number) => ({
+        id: index.toString(),
+        url: `http://localhost:5000${img.path}`,
+        title: `Property Image ${index + 1}`,
+        description: `Property view ${index + 1}`
+      }))
+    : [
+        {
+          id: "1",
+          url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop",
+          title: "Main View",
+          description: "Overview of the entire property"
+        },
+        {
+          id: "2", 
+          url: "https://images.unsplash.com/photo-1574263867128-a3d5c1b1deae?w=800&h=600&fit=crop",
+          title: "Soil Quality",
+          description: "Rich, fertile soil perfect for agriculture"
+        },
+        {
+          id: "3",
+          url: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop", 
+          title: "Access Road",
+          description: "Well-maintained access road"
+        },
+        {
+          id: "4",
+          url: "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=800&h=600&fit=crop",
+          title: "Boundary View",
+          description: "Clear property boundaries"
+        }
+      ];
+
+  // Transform backend documents or use fallback
+  const documents: Document[] = property?.documents?.length > 0
+    ? [
+        property.documents.titleDeed && {
+          id: "1",
+          name: "Title Deed Certificate",
+          type: "title-deed" as const,
+          verified: true,
+          uploadDate: new Date().toLocaleDateString(),
+          size: "2.4 MB"
+        },
+        property.documents.surveyReport && {
+          id: "2",
+          name: "Survey Report",
+          type: "survey" as const,
+          verified: true,
+          uploadDate: new Date().toLocaleDateString(),
+          size: "5.1 MB"
+        },
+        property.documents.taxCertificate && {
+          id: "3",
+          name: "Tax Certificate",
+          type: "certificate" as const,
+          verified: true,
+          uploadDate: new Date().toLocaleDateString(),
+          size: "1.2 MB"
+        }
+      ].filter(Boolean)
+    : [
+        {
+          id: "1",
+          name: "Title Deed Certificate",
+          type: "title-deed",
+          verified: true,
+          uploadDate: "2024-01-10",
+          size: "2.4 MB"
+        },
+        {
+          id: "2", 
+          name: "Survey Report 2024",
+          type: "survey",
+          verified: true,
+          uploadDate: "2024-01-12",
+          size: "5.1 MB"
+        },
+        {
+          id: "3",
+          name: "Tax Compliance Certificate",
+          type: "certificate", 
+          verified: true,
+          uploadDate: "2024-01-08",
+          size: "1.2 MB"
+        },
+        {
+          id: "4",
+          name: "Professional Inspection Report",
+          type: "inspection",
+          verified: true,
+          uploadDate: "2024-01-18",
+          size: "3.7 MB"
+        }
+      ];
 
   const inspectionReports: InspectionReport[] = [
     {
@@ -186,6 +279,43 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
       default: return FileText;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading property details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <Link to="/marketplace" className="text-primary hover:underline">
+            Back to Marketplace
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">Property not found</p>
+          <Link to="/marketplace" className="text-primary hover:underline">
+            Back to Marketplace
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -261,9 +391,17 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
 
                 {/* Verification Badge */}
                 <div className="absolute top-4 right-4">
-                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm font-medium text-emerald-400">Verified</span>
+                  <div className={`flex items-center gap-1 px-3 py-1 rounded-full backdrop-blur-sm border ${
+                    property.verificationStatus === 'verified' 
+                      ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+                      : property.verificationStatus === 'pending'
+                      ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400'
+                      : 'bg-red-500/20 border-red-500/30 text-red-400'
+                  }`}>
+                    {property.verificationStatus === 'verified' && <CheckCircle2 className="w-4 h-4" />}
+                    {property.verificationStatus === 'pending' && <Clock className="w-4 h-4" />}
+                    {property.verificationStatus === 'unverified' && <Shield className="w-4 h-4" />}
+                    <span className="text-sm font-medium capitalize">{property.verificationStatus}</span>
                   </div>
                 </div>
               </div>
@@ -344,7 +482,7 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                         <div>
                           <h3 className="text-lg font-semibold mb-3">Key Features</h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {property.features.map((feature, index) => (
+                            {property.features.map((feature: string, index: number) => (
                               <div key={index} className="flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                                 <span className="text-sm">{feature}</span>
@@ -547,8 +685,13 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Status</span>
                     <div className="flex items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      <span className="text-emerald-600 font-medium">Verified</span>
+                      {property.verificationStatus === 'verified' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                      {property.verificationStatus === 'pending' && <Clock className="w-4 h-4 text-yellow-500" />}
+                      {property.verificationStatus === 'unverified' && <Shield className="w-4 h-4 text-red-500" />}
+                      <span className={`font-medium capitalize ${
+                        property.verificationStatus === 'verified' ? 'text-emerald-600' :
+                        property.verificationStatus === 'pending' ? 'text-yellow-600' : 'text-red-600'
+                      }`}>{property.verificationStatus}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-sm">
