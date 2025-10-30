@@ -16,7 +16,6 @@ const Header: React.FC = () => {
   const navLinks = [
     { name: "Home", id: "home", to: "/" },
     { name: "Marketplace", id: "marketplace", to: "/marketplace" },
-    { name: "Sell Land", id: "sell-land", to: "/sell-land" },
     { name: "Inspectors", id: "inspectors", to: "/inspectors" },
     { name: "How It Works", id: "how-it-works", to: "/how-it-works" },
   ];
@@ -26,7 +25,6 @@ const Header: React.FC = () => {
     const pathToId: Record<string, string> = {
       "/": "home",
       "/marketplace": "marketplace", 
-      "/sell-land": "sell-land",
       "/inspectors": "inspectors",
       "/how-it-works": "how-it-works",
       "/inspector-dashboard": "inspectors",
