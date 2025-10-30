@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import HowItWorks from './components/HowItWorks';
 import Landing from './components/Landing';
 import Hero from './components/Hero';
-import Wallet from './components/Wallet';
+import Chatbot from './Pages/Chatbot';
 import Layout from './components/Layout';
 import { TrustedInspectors } from './components/TrustedInspectors';
 import InspectorDashboard from './components/InspectorDashboard';
@@ -60,7 +60,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/chatbot',
-    element: <Navigate to="/how-it-works" replace />,
+    element: <Layout showHeader><Chatbot /></Layout>,
   },
   // Wildcard: redirect unknown paths to root
   {
@@ -73,7 +73,6 @@ const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");
 }
-
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <RouterProvider router={router} future={{ v7_startTransition: true }} />
