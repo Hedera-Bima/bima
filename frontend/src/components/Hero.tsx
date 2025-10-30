@@ -1,5 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { 
   MapPin, 
   Shield, 
@@ -748,28 +749,30 @@ export const MarketplacePreview = () => {
                     </motion.div>
 
                     {/* View Details Button */}
-                    <motion.button
-                      whileHover={{ 
-                        scale: 1.05,
-                        y: -2,
-                      }}
-                      whileTap={{ scale: 0.95 }}
-                      className="relative w-full mt-4 py-3 px-4 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 overflow-hidden transition-all duration-200 hover:bg-primary/90"
-                    >
-                      <span className="relative z-10">View Details</span>
-                      <motion.div
-                        animate={{
-                          x: hoveredCard === listing.id ? [0, 5, 0] : 0,
+                    <Link to={`/land/${listing.id}`}>
+                      <motion.button
+                        whileHover={{ 
+                          scale: 1.05,
+                          y: -2,
                         }}
-                        transition={{
-                          duration: 0.5,
-                          repeat: hoveredCard === listing.id ? Infinity : 0,
-                        }}
-                        className="relative z-10"
+                        whileTap={{ scale: 0.95 }}
+                        className="relative w-full mt-4 py-3 px-4 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 overflow-hidden transition-all duration-200 hover:bg-primary/90"
                       >
-                        <ExternalLink className="w-4 h-4" />
-                      </motion.div>
-                    </motion.button>
+                        <span className="relative z-10">View Details</span>
+                        <motion.div
+                          animate={{
+                            x: hoveredCard === listing.id ? [0, 5, 0] : 0,
+                          }}
+                          transition={{
+                            duration: 0.5,
+                            repeat: hoveredCard === listing.id ? Infinity : 0,
+                          }}
+                          className="relative z-10"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </motion.div>
+                      </motion.button>
+                    </Link>
                   </div>
 
                   {/* Bottom glow effect */}
