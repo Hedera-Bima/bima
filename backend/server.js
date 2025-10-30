@@ -103,15 +103,21 @@ app.get('/api/listings', (req, res) => {
 // Get single listing by ID
 app.get('/api/listings/:id', (req, res) => {
   try {
+    console.log('Fetching listing with ID:', req.params.id);
     const listings = readListings();
+    console.log('Total listings found:', listings.length);
     const listing = listings.find(l => l.id === req.params.id);
+    console.log('Found listing:', listing ? 'Yes' : 'No');
     
     if (!listing) {
+      console.log('Listing not found, returning 404');
       return res.status(404).json({ error: 'Listing not found' });
     }
     
+    console.log('Returning single listing with price:', listing.price);
     res.json(listing);
   } catch (error) {
+    console.error('Error in /api/listings/:id:', error);
     res.status(500).json({ error: 'Failed to fetch listing' });
   }
 });

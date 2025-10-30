@@ -65,52 +65,92 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
     const fetchProperty = async () => {
       try {
         setLoading(true);
+        console.log('Fetching listing with ID:', landId);
         const response = await fetch(`http://localhost:5000/api/listings/${landId}`);
+        console.log('Response status:', response.status);
         
         if (response.ok) {
-          const listing = await response.json();
+          const data = await response.json();
+          console.log('Fetched listing data:', data);
+          
+          // Handle both array and object responses
+          let listing;
+          if (Array.isArray(data)) {
+            // If it's an array, find the listing with matching ID
+            listing = data.find(item => item.id === landId) || data[0];
+            console.log('Found matching listing in array:', listing ? 'Yes' : 'No (using first item)');
+          } else {
+            listing = data;
+          }
+          console.log('Processed listing:', listing);
+          console.log('Price value:', listing?.price, 'Type:', typeof listing?.price);
+          
+          // Ensure price is properly formatted
+          let formattedPrice = "0";
+          if (listing && listing.price) {
+            if (typeof listing.price === 'number') {
+              formattedPrice = listing.price.toLocaleString();
+            } else if (typeof listing.price === 'string' && listing.price !== '') {
+              // If it's already a formatted string, use it
+              formattedPrice = listing.price;
+            }
+          }
+          console.log('Formatted price:', formattedPrice);
+          
           // Transform backend data to match component expectations
           setProperty({
-            id: listing.id,
-            title: listing.title,
-            location: listing.location,
+            id: listing?.id || landId,
+            title: listing?.title || "Property Title",
+            location: listing?.location || "Location",
             coordinates: { lat: -1.1719, lng: 36.8315 }, // Default coordinates
-            price: listing.price ? listing.price.toString() : "0",
+            price: formattedPrice,
             currency: "KES",
-            area: listing.size,
-            description: listing.description,
+            area: listing?.size || "N/A",
+            description: listing?.description || "No description available",
             features: [
-              listing.landType && `Land Type: ${listing.landType}`,
-              listing.zoning && `Zoning: ${listing.zoning}`,
-              listing.utilities && `Utilities: ${listing.utilities}`,
-              listing.accessibility && `Road Access: ${listing.accessibility}`,
-              listing.nearbyAmenities && `Nearby Amenities: ${listing.nearbyAmenities}`
+              listing?.landType && `Land Type: ${listing.landType}`,
+              listing?.zoning && `Zoning: ${listing.zoning}`,
+              listing?.utilities && `Utilities: ${listing.utilities}`,
+              listing?.accessibility && `Road Access: ${listing.accessibility}`,
+              listing?.nearbyAmenities && `Nearby Amenities: ${listing.nearbyAmenities}`
             ].filter(Boolean),
             ownerDID: "did:hedera:testnet:z9KmF47C1xvVk2D8nQw3...",
-            ownerName: listing.seller?.name || "Property Owner",
+            ownerName: listing?.seller?.name || "Property Owner",
             ownerContact: {
-              phone: listing.seller?.phone || "Contact via platform",
-              email: listing.seller?.email || "Contact via platform"
+              phone: listing?.seller?.phone || "Contact via platform",
+              email: listing?.seller?.email || "Contact via platform"
             },
-            verificationStatus: listing.status === 'verified' ? 'verified' : listing.status === 'pending_verification' ? 'pending' : 'unverified',
-            listedDate: new Date(listing.createdAt).toLocaleDateString(),
-            lastUpdated: new Date(listing.updatedAt || listing.createdAt).toLocaleDateString(),
+            verificationStatus: listing?.status === 'verified' ? 'verified' : listing?.status === 'pending_verification' ? 'pending' : 'unverified',
+            listedDate: listing?.createdAt ? new Date(listing.createdAt).toLocaleDateString() : "N/A",
+            lastUpdated: listing?.updatedAt ? new Date(listing.updatedAt).toLocaleDateString() : listing?.createdAt ? new Date(listing.createdAt).toLocaleDateString() : "N/A",
             views: Math.floor(Math.random() * 500) + 50, // Mock views
             inspections: Math.floor(Math.random() * 20) + 1, // Mock inspections
-            images: listing.images || [],
-            documents: listing.documents || []
+            images: listing?.images || [],
+            documents: listing?.documents || []
           });
         } else {
-          // Fallback to dummy data if listing not found in backend
+          console.log('Listing not found in backend, using dummy data for landId:', landId);
+          console.log('Response status:', response.status);
+          console.log('Response body:', await response.text());
+          // Fallback to dummy data if listing not found in backend - match dummy listing prices
+          const dummyData = {
+            "1": { price: "45,000,000", title: "Premium Land in Karen", location: "Nairobi, Karen", area: "2.5 acres" },
+            "2": { price: "78,500,000", title: "Agricultural Land in Limuru", location: "Kiambu, Limuru", area: "5.0 acres" },
+            "3": { price: "120,000,000", title: "Commercial Land in Konza", location: "Machakos, Konza", area: "10.0 acres" },
+            "4": { price: "95,000,000", title: "Residential Land in Elementaita", location: "Nakuru, Elementaita", area: "7.5 acres" }
+          };
+          
+          const dummy = dummyData[landId as keyof typeof dummyData] || dummyData["1"];
+          
           setProperty({
             id: landId,
-            title: "Premium Agricultural Land in Kiambu",
-            location: "Kiambu County, Central Kenya",
+            title: dummy.title,
+            location: dummy.location,
             coordinates: { lat: -1.1719, lng: 36.8315 },
-            price: "45,000,000",
+            price: dummy.price,
             currency: "KES",
-            area: "5.2 acres",
-            description: "Exceptional agricultural land with fertile soil, perfect for farming or development. Located in the heart of Kiambu with excellent accessibility and infrastructure.",
+            area: dummy.area,
+            description: "Exceptional agricultural land with fertile soil, perfect for farming or development. Located in the heart of Kenya with excellent accessibility and infrastructure.",
             features: [
               "Fertile red soil perfect for agriculture",
               "Access to clean water supply",
