@@ -23,7 +23,6 @@ const Index = () => {
     { name: "Sell Land", id: "sell-land", to: "/sell-land" },
     { name: "Inspectors", id: "inspectors", to: "/inspectors" },
     { name: "How It Works", id: "how-it-works", to: "/how-it-works" },
-    { name: "Ecosystem", id: "ecosystem", to: "/ecosystem" },
   ];
 
   // Track active link based on current path
@@ -196,175 +195,10 @@ const Index = () => {
         ))}
       </div>
 
-      {/* Header */}
-      <motion.header
-        className="relative z-50 border-b border-border/50 backdrop-blur-xl bg-background/50"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      >
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            {/* Logo */}
-            <motion.div
-              className="flex items-center"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              <div className="relative">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-lg blur-lg opacity-50"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.5, 0.8, 0.5],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-                <div className="relative px-4 py-2 bg-gradient-to-r from-primary to-accent rounded-lg">
-                  <span className="text-2xl font-black text-background">Bima</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-2">
-              {navLinks.map((link, index) => (
-                <Link key={link.name} to={link.to} className="group">
-                  <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.05 }}
-                    aria-current={activeSection === link.id ? 'page' : undefined}
-                    className={`relative px-4 py-2 text-sm font-semibold rounded-md transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                      activeSection === link.id
-                        ? 'text-foreground border border-primary/40 bg-secondary/60'
-                        : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border border-transparent hover:border-primary/30'
-                    }`}
-                  >
-                    <span className="relative z-10">{link.name}</span>
-                    <motion.div
-                      className="absolute inset-0 rounded-md pointer-events-none"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: activeSection === link.id ? 1 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    />
-                    <span
-                      className={`pointer-events-none absolute left-4 right-4 -bottom-1 h-0.5 rounded-full transition-opacity duration-200 ${
-                        activeSection === link.id ? 'opacity-100 bg-gradient-to-r from-primary via-accent to-primary' : 'opacity-0 group-hover:opacity-100 bg-primary/60'
-                      }`}
-                    />
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Theme Toggle & Connect Wallet Button - Desktop */}
-            <div className="hidden lg:flex items-center gap-3">
-              <ThemeToggle />
-              <Button
-                type="button"
-                aria-label="Connect Wallet"
-                onClick={handleConnect}
-                disabled={isConnecting}
-                className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                <Wallet className="w-5 h-5" />
-                <span>
-                  {isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId.slice(0,6)}…${accountId.slice(-4)}` : 'Connect Wallet'}
-                </span>
-              </Button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <motion.button
-              className="lg:hidden p-2 text-foreground"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              whileTap={{ scale: 0.95 }}
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </motion.button>
-          </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              className="lg:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="px-4 py-6 space-y-4">
-                {navLinks.map((link, index) => (
-                  <Link key={link.name} to={link.to} onClick={() => setIsMenuOpen(false)} className="block">
-                    <motion.div
-                      aria-current={activeSection === link.id ? 'page' : undefined}
-                      className={`w-full text-left px-4 py-3 font-medium rounded-lg transition-colors border ${
-                        activeSection === link.id
-                          ? 'text-foreground bg-secondary/60 border-primary/30'
-                          : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60 border-transparent hover:border-primary/20'
-                      }`}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      {link.name}
-                    </motion.div>
-                  </Link>
-                ))}
-                <div className="flex items-center gap-4 pt-4">
-                  <ThemeToggle />
-                  <Button
-                    type="button"
-                    aria-label="Connect Wallet"
-                    onClick={handleConnect}
-                    disabled={isConnecting}
-                    className="cursor-pointer select-none flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                    <Wallet className="w-5 h-5" />
-                    <span>{isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId.slice(0,6)}…${accountId.slice(-4)}` : 'Connect Wallet'}</span>
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
 
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-5rem)] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20">
+      <section className="relative min-h-[calc(100vh-5rem)] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6">
         <div className="relative z-10 max-w-7xl mx-auto text-center">
-          {/* Blockchain Badge */}
-          <motion.div
-            className="inline-flex items-center gap-3 px-6 py-3 mb-8 rounded-full bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 backdrop-blur-sm"
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", duration: 1, delay: 0.2 }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <Shield className="w-8 h-8 text-accent" />
-            <span className="text-sm font-semibold text-primary tracking-wider uppercase">
-              Powered by Hedera
-            </span>
-            <motion.div
-              className="w-2 h-2 rounded-full bg-primary"
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [1, 0.5, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-              }}
-            />
-          </motion.div>
 
           {/* Main Headline */}
           <motion.div
@@ -373,6 +207,31 @@ const Index = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mb-12"
           >
+            {/* Powered by Hedera Badge */}
+            <motion.div
+              className="inline-flex items-center gap-3 px-6 py-3 mb-1 rounded-full bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 backdrop-blur-sm"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", duration: 1, delay: 0.2 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <Shield className="w-6 h-6 text-accent" />
+              <span className="text-xs font-semibold text-primary tracking-wider uppercase">
+                Powered by Hedera
+              </span>
+              <motion.div
+                className="w-2 h-2 rounded-full bg-primary"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [1, 0.5, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                }}
+              />
+            </motion.div>
+
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight">
               <motion.span
                 className="inline-block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto]"
@@ -502,55 +361,6 @@ const Index = () => {
             </div>
           </motion.div>
 
-          {/* Ecosystem Participants */}
-          <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.0 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Ecosystem Participants</span>
-            </h2>
-            <p className="text-lg text-muted-foreground text-center max-w-3xl mx-auto mb-12">
-              BIMA connects all stakeholders in a transparent, trustworthy land ownership ecosystem
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {participants.map((participant, index) => (
-                <motion.div
-                  key={participant.title}
-                  className="group relative p-6 rounded-xl bg-secondary/40 backdrop-blur-sm border border-border/50 hover:border-primary/60 transition-all hover:shadow-[0_20px_60px_rgba(99,102,241,0.25)]"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 2.1 + index * 0.1 }}
-                  whileHover={{ 
-                    y: -5,
-                    boxShadow: "0 20px 40px rgba(59,130,246,0.2)"
-                  }}
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
-                  />
-                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-primary/50 via-fuchsia-500/50 to-accent/50 z-10 opacity-80" />
-                  <div className="relative z-10">
-                    <motion.div
-                      className="inline-flex p-3 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 mb-4"
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <participant.icon className="w-6 h-6 text-primary" />
-                    </motion.div>
-                    <h3 className="text-lg font-bold mb-2">{participant.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{participant.description}</p>
-                    <div className="text-xs font-semibold text-primary bg-primary/20 px-3 py-1 rounded-full inline-block">
-                      {participant.action}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
 
           {/* Impact Metrics */}
           <motion.div
