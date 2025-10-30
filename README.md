@@ -12,9 +12,9 @@ Deployed on the Hedera public ledger, it leverages tokenized land titles (NFTs),
 ## ✨ Key Features
 
 ### 🏠 Land Marketplace & Discovery
-- **Browse verified land listings with price, size, and location.
-- **Filter by verified status and inspector credibility.
--** On-chain proof of authenticity for each listing.
+- Browse verified land listings with price, size, and location.
+- Filter by verified status and inspector credibility.
+- On-chain proof of authenticity for each listing.
 
 ### 🧾 Land Verification
 -**Dual-signature (multi-sig) verification by Chiefs, Surveyors, and Land Officers.
