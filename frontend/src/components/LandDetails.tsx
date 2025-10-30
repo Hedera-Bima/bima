@@ -563,12 +563,18 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
 
                 {/* Buy Button */}
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="group relative w-full px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-lg overflow-hidden flex items-center justify-center gap-3 text-lg shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm"
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 60px rgba(59,130,246,1)" }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Wallet className="w-5 h-5" />
-                  Buy Now with Hedera
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: "0%" }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <Wallet className="w-6 h-6 relative z-10" />
+                  <span className="relative z-10">Buy now</span>
                 </motion.button>
 
                 <div className="text-center mt-3">
