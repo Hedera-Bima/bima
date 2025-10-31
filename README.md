@@ -348,24 +348,4 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Links
-
-- [Website](https://bima-land.com)
-- [Documentation](https://docs.bima-land.com)
-- [Hedera HashScan](https://hashscan.io/testnet/token/0.0.4892576)
-- [Community Forum](https://forum.bima-land.com)
-
----
-
-<div align="center">
-
-**Built with ❤️ on Hedera Hashgraph**
-
-*Transforming African Land Ownership - One Blockchain Transaction at a Time*
-
-[![Hedera](https://img.shields.io/badge/Powered_by-Hedera-000000?style=for-the-badge&logo=hedera&logoColor=white)](https://hedera.com)
-
-</div>
-
----
 
