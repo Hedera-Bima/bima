@@ -12,10 +12,13 @@ interface FormData {
   description: string;
 }
 
+// Tweak UploadedFile to minimally support status, type, name, hash
 interface UploadedFile {
   name: string;
   type: string;
   hash?: string;
+  status?: 'pending' | 'success' | 'error';
+  gatewayOk?: boolean;
 }
 
 export const ListLandForm = () => {
@@ -36,97 +39,149 @@ export const ListLandForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Handle input field updates
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fileType: 'ownershipProof' | 'surveyMap' | 'additional') => {
-    const uploadedFile = e.target.files?.[0];
-    if (!uploadedFile) return;
-
+  // Helper for uploading ONE file to IPFS and setting result in state
+  const uploadSingleFile = async (
+    file: File, 
+    fileType: 'ownershipProof' | 'surveyMap' | 'additional',
+    index?: number
+  ) => {
+    let fileData: UploadedFile = {
+      name: file.name,
+      type: file.type,
+      status: 'pending',
+    };
+    if (fileType === 'additional') {
+      setFiles(prev => ({
+        ...prev,
+        additionalDocs: index !== undefined ? [...prev.additionalDocs.slice(0, index), fileData, ...prev.additionalDocs.slice(index + 1)] : [...prev.additionalDocs, fileData],
+      }));
+    } else {
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: fileData,
+      }));
+    }
     try {
-      // Upload to IPFS
-      const formData = new FormData();
-      formData.append('file', uploadedFile);
-      const { ipfsHash } = await api.uploadFileToIPFS(uploadedFile);
-
-      const fileData: UploadedFile = {
-        name: uploadedFile.name,
-        type: uploadedFile.type,
+      const { ipfsHash } = await api.uploadFileToIPFS(file);
+      fileData = {
+        ...fileData,
         hash: ipfsHash,
+        status: ipfsHash ? 'success' : 'error',
       };
-
-      if (fileType === 'additional') {
-        setFiles(prev => ({
-          ...prev,
-          additionalDocs: [...prev.additionalDocs, fileData],
-        }));
-      } else {
-        setFiles(prev => ({
-          ...prev,
-          [fileType]: fileData,
-        }));
+      // Check propagation (optional)
+      if (ipfsHash) {
+        const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+        try {
+          const resp = await fetch(gatewayUrl, { method: 'HEAD' });
+          fileData.gatewayOk = resp.ok;
+          fileData.status = resp.ok ? 'success' : 'error';
+        } catch {
+          fileData.gatewayOk = false;
+          fileData.status = 'error';
+        }
       }
-    } catch (err) {
-      setError('Failed to upload file to IPFS. Please try again.');
-      console.error('File upload error:', err);
+      setFiles(prev => {
+        if (fileType === 'additional' && index !== undefined) {
+          const docs = [...prev.additionalDocs];
+          docs[index] = fileData;
+          return { ...prev, additionalDocs: docs };
+        } else if (fileType === 'additional') {
+          return { ...prev, additionalDocs: [...prev.additionalDocs.slice(0, -1), fileData] };
+        } else {
+          return { ...prev, [fileType]: fileData };
+        }
+      });
+    } catch {
+      fileData.status = 'error';
+      setError('Failed to upload to IPFS.');
     }
   };
 
+  // In the file input onChange for 'ownershipProof' or 'surveyMap':
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'ownershipProof' | 'surveyMap' | 'additional') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (type === 'additional') {
+      setFiles(prev => ({
+        ...prev,
+        additionalDocs: [...prev.additionalDocs, { name: file.name, type: file.type, status: 'pending' }]
+      }));
+      // Upload last in array
+      uploadSingleFile(file, 'additional', files.additionalDocs.length);
+    } else {
+      uploadSingleFile(file, type);
+    }
+  };
+
+  // Additional: support multiple files for additionalDocs
+  const handleAdditionalFilesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = Array.from(e.target.files || []);
+    newFiles.forEach((file) => {
+      setFiles(prev => ({
+        ...prev,
+        additionalDocs: [...prev.additionalDocs, { name: file.name, type: file.type, status: 'pending' }]
+      }));
+      uploadSingleFile(file, 'additional', files.additionalDocs.length);
+    });
+  };
+
+  // Check readiness
+  const canSubmit =
+    files.ownershipProof?.status === 'success' &&
+    files.ownershipProof?.gatewayOk &&
+    files.surveyMap?.status === 'success' &&
+    files.surveyMap?.gatewayOk;
+
+  // On submit: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
     setSuccess(null);
-
     try {
-      // Validate required files
-      if (!files.ownershipProof?.hash || !files.surveyMap?.hash) {
-        throw new Error('Ownership proof and survey map are required');
+      // Validate files
+      if (!canSubmit) {
+        throw new Error('All required files must be uploaded and reachable via IPFS.');
       }
-
-      console.log('Starting form submission...');
-      
-      // Create metadata
+      // 1. Upload metadata with doc hashes (guarantee: ONLY include public fields)
       const metadata = {
-        ...formData,
+        size: formData.size,
+        price: formData.price,
+        location: formData.location,
+        description: formData.description,
         documents: {
-          ownershipProof: files.ownershipProof.hash,
-          surveyMap: files.surveyMap.hash,
-          additional: files.additionalDocs.map(doc => doc.hash),
+          ownershipProof: files.ownershipProof?.hash ?? null,
+          surveyMap: files.surveyMap?.hash ?? null,
+          additional: Array.isArray(files.additionalDocs)
+            ? files.additionalDocs.filter(doc => doc.hash).map(doc => doc.hash)
+            : []
         },
         timestamp: new Date().toISOString(),
-        status: 'pending',
+        status: 'pending'
       };
-
-      // Upload metadata to IPFS
       const { ipfsHash: metadataHash } = await api.uploadJSONToIPFS(metadata);
-
-      // Create land NFT with metadata
-      const listingData = new FormData();
-      listingData.append('metadataHash', metadataHash);
-      listingData.append('size', formData.size);
-      listingData.append('price', formData.price);
-      listingData.append('location', formData.location);
-
-      await api.createLandNFT(listingData);
-      
-      setSuccess('Land parcel listed successfully! Waiting for inspector verification.');
-      // Reset form
-      setFormData({
-        size: '',
-        price: '',
-        location: '',
-        description: '',
+      // 2. Create verification entry for inspectors (returns landId)
+      const created = await api.createLandNFT({
+        metadataHash,
+        size: formData.size,
+        price: formData.price,
+        location: formData.location,
       });
+      const landId = created?.landId;
+      setSuccess(`Land parcel listed successfully! Submission ID: ${landId}. Waiting for inspector verification.`);
+      // Reset
+      setFormData({ size: '', price: '', location: '', description: '' });
       setFiles({ additionalDocs: [] });
     } catch (err: any) {
-      setError(err.message || 'Failed to list land parcel. Please try again.');
-      console.error('Submission error:', err);
+      setError(err.message || 'Failed to list land parcel.');
     } finally {
       setIsSubmitting(false);
     }
@@ -169,6 +224,7 @@ export const ListLandForm = () => {
                 type="text"
                 required
                 value={formData.price}
+              
                 onChange={(e) => handleInputChange(e as any)}
                 placeholder="e.g., 5,000,000"
                 className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -223,7 +279,28 @@ export const ListLandForm = () => {
               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
             {files.ownershipProof && (
-              <p className="text-sm text-muted-foreground mt-1">✓ {files.ownershipProof.name}</p>
+              <div className="flex items-center space-x-2 text-sm mt-1">
+                {files.ownershipProof.status === 'success' && files.ownershipProof.hash && (
+                  <>
+                    <span className="text-green-600 font-semibold">✓ Uploaded</span>
+                    <a
+                      href={`https://gateway.pinata.cloud/ipfs/${files.ownershipProof.hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline text-blue-500"
+                    >
+                      View on IPFS
+                    </a>
+                    {!files.ownershipProof.gatewayOk && (
+                      <span className="text-yellow-500">(Awaiting IPFS...)</span>
+                    )}
+                  </>
+                )}
+                {files.ownershipProof.status === 'error' && (
+                  <span className="text-red-500 font-semibold">Failed to verify</span>
+                )}
+                <span className="text-muted-foreground">{files.ownershipProof.name}</span>
+              </div>
             )}
           </div>
 
@@ -241,7 +318,28 @@ export const ListLandForm = () => {
               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
             {files.surveyMap && (
-              <p className="text-sm text-muted-foreground mt-1">✓ {files.surveyMap.name}</p>
+              <div className="flex items-center space-x-2 text-sm mt-1">
+                {files.surveyMap.status === 'success' && files.surveyMap.hash && (
+                  <>
+                    <span className="text-green-600 font-semibold">✓ Uploaded</span>
+                    <a
+                      href={`https://gateway.pinata.cloud/ipfs/${files.surveyMap.hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline text-blue-500"
+                    >
+                      View on IPFS
+                    </a>
+                    {!files.surveyMap.gatewayOk && (
+                      <span className="text-yellow-500">(Awaiting IPFS...)</span>
+                    )}
+                  </>
+                )}
+                {files.surveyMap.status === 'error' && (
+                  <span className="text-red-500 font-semibold">Failed to verify</span>
+                )}
+                <span className="text-muted-foreground">{files.surveyMap.name}</span>
+              </div>
             )}
           </div>
 
@@ -252,7 +350,7 @@ export const ListLandForm = () => {
                 id="additionalDocs"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => handleFileUpload(e as any, 'additional')}
+                onChange={handleAdditionalFilesUpload}
                 multiple
                 className="pl-10 w-full"
               />
@@ -261,7 +359,26 @@ export const ListLandForm = () => {
             {files.additionalDocs.length > 0 && (
               <div className="text-sm text-muted-foreground mt-1">
                 {files.additionalDocs.map((doc, index) => (
-                  <p key={index}>✓ {doc.name}</p>
+                  <div key={index} className="flex items-center space-x-2">
+                    {doc.status === 'success' && doc.hash && (
+                      <>
+                        <span className="text-green-600 font-semibold">✓ Uploaded</span>
+                        <a
+                          href={`https://gateway.pinata.cloud/ipfs/${doc.hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-blue-500"
+                        >
+                          View on IPFS
+                        </a>
+                        {!doc.gatewayOk && (
+                          <span className="text-yellow-500">(Awaiting IPFS...)</span>
+                        )}
+                      </>
+                    )}
+                    {doc.status === 'error' && <span className="text-red-500 font-semibold">Failed to verify</span>}
+                    <span>{doc.name}</span>
+                  </div>
                 ))}
               </div>
             )}
@@ -281,7 +398,7 @@ export const ListLandForm = () => {
         )}
 
         {/* Submit Button */}
-        <Button type="submit" disabled={isSubmitting} className="w-full">
+        <Button type="submit" disabled={isSubmitting || !canSubmit} className="w-full">
           {isSubmitting ? (
             'Submitting...'
           ) : (

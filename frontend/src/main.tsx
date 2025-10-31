@@ -5,7 +5,7 @@ import HowItWorks from './components/HowItWorks';
 import Landing from './components/Landing';
 import Hero from './components/Hero';
 import Layout from './components/Layout';
-import { TrustedInspectors } from './components/TrustedInspectors';
+import InspectorsPage from './components/InspectorsPage';
 import InspectorDashboard from './components/InspectorDashboard';
 import SellerDashboard from './components/SellerDashboard';
 import LandDetails from './components/LandDetails';
@@ -30,7 +30,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/inspectors',
-    element: <Layout showHeader><TrustedInspectors /></Layout>,
+    element: <Layout showHeader><InspectorsPage /></Layout>,
   },
   {
     path: '/inspector-dashboard',
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/land/:landId',
-    element: <Layout showHeader><LandDetails landId="" /></Layout>,
+    element: <Layout showHeader><LandDetails /></Layout>,
   },
   // How it works
   {
@@ -80,6 +80,6 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} future={{ v7_startTransition: true }} />
+    <RouterProvider router={router} />
   </React.StrictMode>
 );

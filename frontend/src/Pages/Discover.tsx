@@ -1,5 +1,3 @@
-import React from 'react'
-
 function DiscoverPage() {
   return (
     <div>Discover Page</div>

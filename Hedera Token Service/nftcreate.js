@@ -3,7 +3,6 @@ import {
   TokenType,
   TokenSupplyType,
   Client,
-  TokenMintTransaction,
   AccountId,
   PrivateKey
 } from "@hashgraph/sdk";
