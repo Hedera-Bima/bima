@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Shield, Lock, Award, Sparkles, CheckCircle2, TrendingUp } from "lucide-react";
 
 interface InspectorData {
@@ -258,6 +259,12 @@ export const TrustedInspectors = () => {
         </motion.div>
 
         {/* Inspector Cards Grid */}
+        <div className="flex items-center justify-center mb-10">
+          <Link to="/inspector-dashboard" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors">
+            Open Inspector Dashboard
+          </Link>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {inspectors.map((inspector, index) => {
             const config = badgeConfig[inspector.badge];

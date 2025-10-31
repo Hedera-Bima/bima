@@ -143,7 +143,8 @@ app.post('/api/listings', upload.fields([
       nearbyAmenities,
       sellerName,
       sellerPhone,
-      sellerEmail
+      sellerEmail,
+      metadataHash
     } = req.body;
 
     // Validate required fields
@@ -196,6 +197,7 @@ app.post('/api/listings', upload.fields([
         phone: sellerPhone,
         email: sellerEmail
       },
+      metadataHash: metadataHash || null,
       status: 'pending_verification',
       verificationStatus: {
         documents: 'pending',

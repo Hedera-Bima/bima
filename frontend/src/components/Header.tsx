@@ -17,6 +17,7 @@ const Header: React.FC = () => {
     { name: "Home", id: "home", to: "/" },
     { name: "Marketplace", id: "marketplace", to: "/marketplace" },
     { name: "Inspectors", id: "inspectors", to: "/inspectors" },
+    { name: "Inspector Dashboard", id: "inspector-dashboard", to: "/inspector-dashboard" },
     { name: "How It Works", id: "how-it-works", to: "/how-it-works" },
   ];
 
