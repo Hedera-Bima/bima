@@ -53,6 +53,25 @@ graph TD
     I --> J[Title Transfer];
     J --> K[Release Payment];
 ```
+🛠️ Tech Stack
+Languages & Frameworks
+https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
+https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white
+https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white
+https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white
+
+Blockchain & Web3
+https://img.shields.io/badge/Hedera-000000?style=for-the-badge&logo=hedera&logoColor=white
+https://img.shields.io/badge/HashConnect-000000?style=for-the-badge
+https://img.shields.io/badge/Web3.js-F16822?style=for-the-badge&logo=web3.js&logoColor=white
+https://img.shields.io/badge/IPFS-65C2CB?style=for-the-badge&logo=ipfs&logoColor=white
+
+Development Tools
+https://img.shields.io/badge/Hardhat-FFF100?style=for-the-badge&logo=hardhat&logoColor=black
+https://img.shields.io/badge/OpenZeppelin-4E5EE4?style=for-the-badge&logo=OpenZeppelin&logoColor=white
+https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white
+https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white
 
 ## 🔗 Hedera Integration Deep Dive
 
