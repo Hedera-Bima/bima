@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { 
-  Plus, MapPin, Clock, CheckCircle2, AlertCircle, 
+  Plus, MapPin, Clock, CheckCircle2, 
   FileText, Upload, DollarSign, Eye, Edit3, 
-  TrendingUp, Users, Shield, Calendar, 
-  Image as ImageIcon, Download, Copy
+  TrendingUp, Users, Shield, 
+  Image as ImageIcon, X
 } from "lucide-react";
+import { api } from '../lib/api';
 
 interface LandListing {
   id: string;
@@ -22,6 +23,7 @@ interface LandListing {
   inquiries: number;
   documents: string[];
   images: number;
+  metadataHash?: string; // Added for minting
 }
 
 interface SellerStats {
@@ -33,56 +35,6 @@ interface SellerStats {
   successRate: number;
 }
 
-const mockListings: LandListing[] = [
-  {
-    id: "PROP-2024-001",
-    title: "Prime Commercial Land in Karen",
-    location: "Nairobi, Karen Estate",
-    area: "2.5 acres",
-    price: "45,000,000 KES",
-    status: "verified",
-    createdDate: "2024-01-10",
-    verificationProgress: 100,
-    inspectorsAssigned: 3,
-    requiredInspectors: 3,
-    viewCount: 127,
-    inquiries: 8,
-    documents: ["Title Deed", "Survey Report", "Tax Certificate"],
-    images: 12
-  },
-  {
-    id: "PROP-2024-002", 
-    title: "Residential Plot in Milimani",
-    location: "Kisumu, Milimani",
-    area: "1.2 acres",
-    price: "18,500,000 KES",
-    status: "pending-verification",
-    createdDate: "2024-01-14",
-    verificationProgress: 67,
-    inspectorsAssigned: 2,
-    requiredInspectors: 2,
-    viewCount: 45,
-    inquiries: 3,
-    documents: ["Title Deed", "Survey Report"],
-    images: 8
-  },
-  {
-    id: "PROP-2024-003",
-    title: "Beachfront Property in Nyali", 
-    location: "Mombasa, Nyali",
-    area: "0.8 acres",
-    price: "32,000,000 KES",
-    status: "draft",
-    createdDate: "2024-01-16",
-    verificationProgress: 0,
-    inspectorsAssigned: 0,
-    requiredInspectors: 2,
-    viewCount: 0,
-    inquiries: 0,
-    documents: ["Title Deed"],
-    images: 4
-  }
-];
 
 const sellerStats: SellerStats = {
   totalListings: 8,
@@ -133,7 +85,281 @@ const statusConfig = {
 
 export default function SellerDashboard() {
   const [activeTab, setActiveTab] = useState<'listings' | 'analytics' | 'create'>('listings');
-  const [selectedListing, setSelectedListing] = useState<LandListing | null>(null);
+  // const [selectedListing, setSelectedListing] = useState<LandListing | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    location: '',
+    size: '',
+    price: '',
+    description: '',
+    landType: '',
+    zoning: '',
+    utilities: '',
+    accessibility: '',
+    nearbyAmenities: '',
+    sellerName: '',
+    sellerPhone: '',
+    sellerEmail: ''
+  });
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState({
+    titleDeed: null as File | null,
+    surveyReport: null as File | null,
+    taxCertificate: null as File | null
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMintingId, setIsMintingId] = useState<string | null>(null);
+  const [hederaListings, setHederaListings] = useState<LandListing[]>([]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<any>(null);
+  const [editMeta, setEditMeta] = useState<any>(null);
+  const [editFiles, setEditFiles] = useState<File[]>([]);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  useEffect(() => {
+    async function loadParcels() {
+      try {
+        const res = await api.getParcels();
+        const items = Array.isArray(res?.items) ? res.items : [];
+        const mapped: LandListing[] = items.map((p: any) => ({
+          id: String(p.landId),
+          title: p.location || 'Land Parcel',
+          location: p.location || 'Unknown',
+          area: p.size || '',
+          price: (p.price ?? '').toString(),
+          status: (p.status === 'minted' ? 'verified' : p.status === 'pending' ? 'pending-verification' : 'listed') as any,
+          createdDate: new Date(p.submittedAt || Date.now()).toISOString(),
+          verificationProgress: p.status === 'pending' ? 50 : 100,
+          inspectorsAssigned: (p.approvals?.length ?? 0),
+          requiredInspectors: 2,
+          viewCount: 0,
+          inquiries: 0,
+          documents: [],
+          images: 0,
+          metadataHash: p.metadataHash
+        }));
+        setHederaListings(mapped);
+      } catch (e) {
+        setHederaListings([]);
+      }
+    }
+    loadParcels();
+  }, []);
+
+  const openEdit = async (listing: any) => {
+    try {
+      if (!listing?.metadataHash) return;
+      const r = await fetch(`https://gateway.pinata.cloud/ipfs/${listing.metadataHash}?cb=${Date.now()}`);
+      const meta = r.ok ? await r.json() : {};
+      setEditTarget(listing);
+      setEditMeta(meta);
+      setEditFiles([]);
+      setEditOpen(true);
+    } catch {
+      setEditTarget(listing);
+      setEditMeta({});
+      setEditFiles([]);
+      setEditOpen(true);
+    }
+  };
+
+  const handleEditFiles = (files: FileList | null) => {
+    if (!files) return;
+    const arr = Array.from(files);
+    setEditFiles(prev => [...prev, ...arr]);
+  };
+
+  const saveEdit = async () => {
+    if (!editTarget) return;
+    try {
+      setSavingEdit(true);
+      const uploaded: string[] = [];
+      for (const f of editFiles) {
+        const res = await api.uploadFileToIPFS(f as any);
+        if (res?.ipfsHash) uploaded.push(res.ipfsHash);
+      }
+      const existingImages = Array.isArray(editMeta?.images) ? editMeta.images : [];
+      const legacyAdditional = Array.isArray(editMeta?.documents?.additional) ? editMeta.documents.additional : [];
+      const mergedImages = [
+        ...existingImages,
+        ...uploaded.map(cid => ({ cid })),
+        ...(!existingImages.length && legacyAdditional.length ? legacyAdditional.map((cid: string) => ({ cid })) : [])
+      ];
+
+      const documents = Array.isArray(editMeta?.documents)
+        ? editMeta.documents
+        : (() => {
+            const arr: any[] = [];
+            if (editMeta?.documents?.titleDeed) arr.push({ name: 'Title Deed', type: 'title-deed', cid: editMeta.documents.titleDeed });
+            if (editMeta?.documents?.surveyReport) arr.push({ name: 'Survey Report', type: 'survey', cid: editMeta.documents.surveyReport });
+            if (Array.isArray(editMeta?.documents?.additional)) for (const cid of editMeta.documents.additional) arr.push({ name: 'Attachment', type: 'certificate', cid });
+            return arr;
+          })();
+
+      const nextMeta = {
+        ...editMeta,
+        images: mergedImages,
+        documents
+      };
+      const up = await api.uploadJSONToIPFS(nextMeta);
+      const newHash = up?.ipfsHash;
+      if (!newHash) throw new Error('Failed to upload updated metadata');
+      await api.updateParcel(editTarget.id, { metadataHash: newHash });
+      setEditOpen(false);
+      setEditTarget(null);
+      setEditMeta(null);
+      setEditFiles([]);
+      const res = await api.getParcels();
+      const items = Array.isArray(res?.items) ? res.items : [];
+      const mapped: LandListing[] = items.map((p: any) => ({
+        id: String(p.landId),
+        title: p.location || 'Land Parcel',
+        location: p.location || 'Unknown',
+        area: p.size || '',
+        price: (p.price ?? '').toString(),
+        status: (p.status === 'minted' ? 'verified' : p.status === 'pending' ? 'pending-verification' : 'listed') as any,
+        createdDate: new Date(p.submittedAt || Date.now()).toISOString(),
+        verificationProgress: p.status === 'pending' ? 50 : 100,
+        inspectorsAssigned: (p.approvals?.length ?? 0),
+        requiredInspectors: 2,
+        viewCount: 0,
+        inquiries: 0,
+        documents: [],
+        images: 0,
+        metadataHash: p.metadataHash
+      }));
+      setHederaListings(mapped);
+      alert('Listing updated successfully');
+    } catch (e: any) {
+      alert(e?.message || 'Failed to update listing');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = (files: FileList | null) => {
+    if (files) {
+      const newImages = Array.from(files).slice(0, 4 - uploadedImages.length);
+      setUploadedImages(prev => [...prev, ...newImages]);
+    }
+  };
+
+  const handleDocumentUpload = (docType: string, file: File) => {
+    setUploadedDocs(prev => ({ ...prev, [docType]: file }));
+  };
+
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeDocument = (docType: string) => {
+    setUploadedDocs(prev => ({ ...prev, [docType]: null }));
+  };
+
+  const TOKEN_ID = '0.0.7158415';
+  const handleMint = async (listing: LandListing & { metadataHash?: string }) => {
+    try {
+      if (listing.status !== 'verified') return;
+      if (!listing.metadataHash) {
+        alert('No metadataHash found for this listing. Ensure metadata was uploaded to IPFS during creation.');
+        return;
+      }
+      setIsMintingId(listing.id);
+      const metadata = {
+        metadataHash: listing.metadataHash,
+        size: listing.area,
+        price: listing.price,
+        location: listing.location
+      };
+      await api.mintLandNFT(TOKEN_ID, metadata);
+      alert('NFT minted successfully!');
+    } catch (e: any) {
+      alert(e?.message || 'Failed to mint NFT');
+    } finally {
+      setIsMintingId(null);
+    }
+  };
+
+  const handleSubmit = async (isDraft: boolean = false) => {
+    setIsSubmitting(true);
+    try {
+      // 1) Optionally upload documents to IPFS if provided
+      let titleDeedHash: string | null = null;
+      let surveyReportHash: string | null = null;
+      let additional: string[] = [];
+      try {
+        if (uploadedDocs.titleDeed) {
+          const res = await api.uploadFileToIPFS(uploadedDocs.titleDeed as any);
+          titleDeedHash = res?.ipfsHash || null;
+        }
+        if (uploadedDocs.surveyReport) {
+          const res = await api.uploadFileToIPFS(uploadedDocs.surveyReport as any);
+          surveyReportHash = res?.ipfsHash || null;
+        }
+        // images as additional optional documents
+        for (const img of uploadedImages) {
+          const res = await api.uploadFileToIPFS(img as any);
+          if (res?.ipfsHash) additional.push(res.ipfsHash);
+        }
+      } catch {}
+
+      // 2) Build metadata JSON (images array + documents array) and upload to IPFS
+      const images = Array.isArray(additional) ? additional.map((cid) => ({ cid })) : [];
+      const documents: Array<{ name: string; type: 'title-deed' | 'survey' | 'certificate' | 'inspection'; cid: string }>= [];
+      if (titleDeedHash) documents.push({ name: 'Title Deed', type: 'title-deed', cid: titleDeedHash });
+      if (surveyReportHash) documents.push({ name: 'Survey Report', type: 'survey', cid: surveyReportHash });
+
+      const metadata = {
+        title: formData.title,
+        size: formData.size,
+        price: formData.price,
+        location: formData.location,
+        description: formData.description,
+        landType: formData.landType,
+        zoning: formData.zoning,
+        utilities: formData.utilities,
+        accessibility: formData.accessibility,
+        nearbyAmenities: formData.nearbyAmenities,
+        seller: {
+          name: formData.sellerName,
+          phone: formData.sellerPhone,
+          email: formData.sellerEmail,
+        },
+        images,            // <- used by Hero and LandDetails
+        documents,         // <- used by LandDetails documents section
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+      };
+      const { ipfsHash: metadataHash } = await api.uploadJSONToIPFS(metadata);
+
+      // 3) Create verification entry on Hedera backend (source of truth)
+      await api.createLandNFT({
+        metadataHash,
+        size: formData.size,
+        price: formData.price,
+        location: formData.location,
+      });
+
+      alert(isDraft ? 'Listing created on Hedera successfully!' : 'Listing submitted for verification on Hedera!');
+      // Reset form
+      setFormData({
+        title: '', location: '', size: '', price: '', description: '',
+        landType: '', zoning: '', utilities: '', accessibility: '',
+        nearbyAmenities: '', sellerName: '', sellerPhone: '', sellerEmail: ''
+      });
+      setUploadedImages([]);
+      setUploadedDocs({ titleDeed: null, surveyReport: null, taxCertificate: null });
+      setActiveTab('listings');
+    } catch (error) {
+      alert('Error submitting listing to Hedera. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -208,6 +434,25 @@ export default function SellerDashboard() {
         </div>
       </section>
 
+      {editOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-lg rounded-xl bg-card p-6 border border-border/50">
+            <h3 className="text-lg font-semibold mb-4">Edit Listing</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Add Images</label>
+                <input type="file" multiple accept="image/*" onChange={(e) => handleEditFiles(e.target.files)} />
+                <div className="text-xs text-muted-foreground mt-2">Selected: {editFiles.length}</div>
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-end gap-2">
+              <button onClick={() => { setEditOpen(false); setEditFiles([]); }} className="px-3 py-2 rounded-lg bg-card/50 border border-border/50 text-sm">Cancel</button>
+              <button onClick={saveEdit} disabled={savingEdit} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm">{savingEdit ? 'Saving...' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
@@ -258,7 +503,7 @@ export default function SellerDashboard() {
               </div>
 
               <div className="grid gap-6">
-                {mockListings.map((listing, index) => (
+                {hederaListings.map((listing, index) => (
                   <motion.div
                     key={listing.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -290,6 +535,29 @@ export default function SellerDashboard() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Mint button for verified listings */}
+                    {listing.status === 'verified' && (
+                      <div className="mb-4 flex gap-2 items-center">
+                        <button
+                          onClick={() => handleMint(listing as any)}
+                          disabled={isMintingId === listing.id}
+                          className="px-3 py-1 rounded-lg border border-emerald-500 text-emerald-600 hover:bg-emerald-500/10 text-sm"
+                        >
+                          {isMintingId === listing.id ? 'Minting...' : 'Mint NFT (Hedera)'}
+                        </button>
+                        {listing.metadataHash && (
+                          <a
+                            href={`https://gateway.pinata.cloud/ipfs/${listing.metadataHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-500/10 text-sm"
+                          >
+                            View Metadata
+                          </a>
+                        )}
+                      </div>
+                    )}
 
                     {/* Verification Progress */}
                     {listing.status === 'pending-verification' && (
@@ -352,7 +620,7 @@ export default function SellerDashboard() {
                           <Eye className="w-3 h-3" />
                           View
                         </button>
-                        <button className="flex items-center gap-2 px-3 py-1 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors text-sm">
+                        <button onClick={() => openEdit(listing)} className="flex items-center gap-2 px-3 py-1 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors text-sm">
                           <Edit3 className="w-3 h-3" />
                           Edit
                         </button>
@@ -462,6 +730,8 @@ export default function SellerDashboard() {
                           <input 
                             type="text" 
                             placeholder="Enter property title"
+                            value={formData.title}
+                            onChange={(e) => handleInputChange('title', e.target.value)}
                             className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                           />
                         </div>
@@ -470,6 +740,8 @@ export default function SellerDashboard() {
                           <input 
                             type="text" 
                             placeholder="City, Area/Estate"
+                            value={formData.location}
+                            onChange={(e) => handleInputChange('location', e.target.value)}
                             className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                           />
                         </div>
@@ -478,14 +750,131 @@ export default function SellerDashboard() {
                           <input 
                             type="text" 
                             placeholder="e.g., 2.5 acres"
+                            value={formData.size}
+                            onChange={(e) => handleInputChange('size', e.target.value)}
                             className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-2">Price (KES)</label>
                           <input 
+                            type="number" 
+                            placeholder="e.g., 45000000"
+                            value={formData.price}
+                            onChange={(e) => handleInputChange('price', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Details */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Property Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Land Type</label>
+                          <select 
+                            value={formData.landType}
+                            onChange={(e) => handleInputChange('landType', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none text-white [&>option]:text-black"
+                          >
+                            <option value="">Select land type</option>
+                            <option value="residential">Residential</option>
+                            <option value="commercial">Commercial</option>
+                            <option value="agricultural">Agricultural</option>
+                            <option value="industrial">Industrial</option>
+                            <option value="mixed-use">Mixed Use</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Zoning</label>
+                          <input 
                             type="text" 
-                            placeholder="e.g., 45,000,000"
+                            placeholder="e.g., Residential Zone R1"
+                            value={formData.zoning}
+                            onChange={(e) => handleInputChange('zoning', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Available Utilities</label>
+                          <input 
+                            type="text" 
+                            placeholder="e.g., Water, Electricity, Sewer"
+                            value={formData.utilities}
+                            onChange={(e) => handleInputChange('utilities', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Road Access</label>
+                          <select 
+                            value={formData.accessibility}
+                            onChange={(e) => handleInputChange('accessibility', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none text-white [&>option]:text-black"
+                          >
+                            <option value="">Select access type</option>
+                            <option value="tarmac">Tarmac Road</option>
+                            <option value="murram">Murram Road</option>
+                            <option value="footpath">Footpath Access</option>
+                            <option value="private">Private Road</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium mb-2">Description</label>
+                        <textarea 
+                          placeholder="Describe the property, its features, and any additional information..."
+                          value={formData.description}
+                          onChange={(e) => handleInputChange('description', e.target.value)}
+                          rows={4}
+                          className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none resize-none"
+                        />
+                      </div>
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium mb-2">Nearby Amenities</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g., Schools, Hospitals, Shopping Centers"
+                          value={formData.nearbyAmenities}
+                          onChange={(e) => handleInputChange('nearbyAmenities', e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Seller Information */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Seller Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Full Name</label>
+                          <input 
+                            type="text" 
+                            placeholder="Enter your full name"
+                            value={formData.sellerName}
+                            onChange={(e) => handleInputChange('sellerName', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Phone Number</label>
+                          <input 
+                            type="tel" 
+                            placeholder="e.g., +254 700 000 000"
+                            value={formData.sellerPhone}
+                            onChange={(e) => handleInputChange('sellerPhone', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Email Address</label>
+                          <input 
+                            type="email" 
+                            placeholder="your.email@example.com"
+                            value={formData.sellerEmail}
+                            onChange={(e) => handleInputChange('sellerEmail', e.target.value)}
                             className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                           />
                         </div>
@@ -496,13 +885,54 @@ export default function SellerDashboard() {
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Required Documents</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {['Title Deed', 'Survey Report', 'Tax Certificate'].map((doc) => (
-                          <div key={doc} className="p-4 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 transition-colors cursor-pointer">
-                            <div className="text-center">
-                              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                              <p className="text-sm font-medium">{doc}</p>
-                              <p className="text-xs text-muted-foreground">Click to upload</p>
-                            </div>
+                        {[
+                          { key: 'titleDeed', label: 'Title Deed' },
+                          { key: 'surveyReport', label: 'Survey Report' },
+                          { key: 'taxCertificate', label: 'Tax Certificate' }
+                        ].map((doc) => (
+                          <div key={doc.key} className="relative">
+                            <input
+                              type="file"
+                              id={doc.key}
+                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleDocumentUpload(doc.key, file);
+                              }}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor={doc.key}
+                              className="block p-4 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
+                            >
+                              <div className="text-center">
+                                {uploadedDocs[doc.key as keyof typeof uploadedDocs] ? (
+                                  <div>
+                                    <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                                    <p className="text-sm font-medium text-green-400">{doc.label}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {uploadedDocs[doc.key as keyof typeof uploadedDocs]?.name}
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        removeDocument(doc.key);
+                                      }}
+                                      className="mt-2 text-xs text-red-400 hover:text-red-300"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                                    <p className="text-sm font-medium">{doc.label}</p>
+                                    <p className="text-xs text-muted-foreground">Click to upload</p>
+                                  </div>
+                                )}
+                              </div>
+                            </label>
                           </div>
                         ))}
                       </div>
@@ -510,25 +940,76 @@ export default function SellerDashboard() {
 
                     {/* Images Upload */}
                     <div>
-                      <h3 className="text-lg font-semibold mb-4">Property Images</h3>
-                      <div className="p-8 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 transition-colors cursor-pointer">
-                        <div className="text-center">
-                          <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                          <p className="text-lg font-medium mb-2">Upload Property Images</p>
-                          <p className="text-sm text-muted-foreground">Drag and drop images or click to browse</p>
+                      <h3 className="text-lg font-semibold mb-4">Property Images (Max 4)</h3>
+                      
+                      {uploadedImages.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                          {uploadedImages.map((image, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={URL.createObjectURL(image)}
+                                alt={`Property ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-lg border border-border/50"
+                              />
+                              <button
+                                onClick={() => removeImage(index)}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      </div>
+                      )}
+                      
+                      {uploadedImages.length < 4 && (
+                        <div>
+                          <input
+                            type="file"
+                            id="images"
+                            multiple
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e.target.files)}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="images"
+                            className="block p-8 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
+                          >
+                            <div className="text-center">
+                              <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                              <p className="text-lg font-medium mb-2">
+                                Upload Property Images ({uploadedImages.length}/4)
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Drag and drop images or click to browse
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Supports JPG, PNG, WebP (Max 10MB each)
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      )}
                     </div>
 
                     {/* Action Buttons */}
                     <div className="flex gap-4 pt-6">
-                      <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors">
-                        <Download className="w-4 h-4" />
-                        Save as Draft
+                      <button 
+                        onClick={() => handleSubmit(true)}
+                        disabled={isSubmitting || !formData.title || !formData.location || !formData.size || !formData.price}
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Plus className="w-4 h-4" />
+                        {isSubmitting ? 'Creating...' : 'Create Listing'}
                       </button>
-                      <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                      <button 
+                        onClick={() => handleSubmit(false)}
+                        disabled={isSubmitting || !formData.title || !formData.location || !formData.size || !formData.price}
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <Shield className="w-4 h-4" />
-                        Submit for Verification
+                        {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
                       </button>
                     </div>
                   </div>
