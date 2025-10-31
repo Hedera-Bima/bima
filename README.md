@@ -225,7 +225,8 @@ https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=w
 - Wallet connection integration
 - Trust indicators and partner logos
 
-<img width="945" alt="BIMA Landing Page" src="https://github.com/user-attachments/assets/landing-page-screenshot" />
+<img width="945" alt="BIMA Landing Page" src="![Uploading image.png…]()
+" />
 
 ### 👤 User Dashboard
 *[Paste dashboard screenshot here]*
