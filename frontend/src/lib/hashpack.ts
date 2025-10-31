@@ -6,6 +6,36 @@ let hashconnectInstance: any | null = null;
 let initialized = false;
 let pairingData: any | null = null;
 
+const STORAGE_KEY = 'hashpack_pairing';
+
+function loadPairingFromStorage(): any | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePairingToStorage(data: any | null) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (data) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    else window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+// Attempt to restore previously paired session (account display) without prompting
+if (typeof window !== 'undefined') {
+  const restored = loadPairingFromStorage();
+  if (restored?.accountIds?.length) {
+    pairingData = restored;
+  }
+}
+
 const APP_METADATA = {
   name: 'Bima',
   description: 'Bima dApp',
@@ -67,6 +97,7 @@ export async function connectHashpack(network: 'testnet' | 'mainnet' | 'previewn
     throw new Error('HashPack extension not detected or pairing failed. Please install/enable HashPack and try again.');
   }
   pairingData = newPairingData;
+  savePairingToStorage(pairingData);
 
   if (!pairingData || !Array.isArray(pairingData.accountIds)) {
     throw new Error('HashPack pairing returned no accounts. Ensure the request was approved in the extension.');
@@ -76,4 +107,14 @@ export async function connectHashpack(network: 'testnet' | 'mainnet' | 'previewn
     accountIds: pairingData?.accountIds ?? [],
     pairingTopic: pairingData?.pairingTopic ?? '',
   };
+}
+
+export function getConnectedAccount(): string | null {
+  const acc = pairingData?.accountIds?.[0];
+  return acc ?? null;
+}
+
+export function clearHashpackConnection() {
+  pairingData = null;
+  savePairingToStorage(null);
 }

@@ -4,7 +4,6 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import HowItWorks from './components/HowItWorks';
 import Landing from './components/Landing';
 import Hero from './components/Hero';
-import Chatbot from './Pages/Chatbot';
 import Layout from './components/Layout';
 import InspectorsPage from './components/InspectorsPage';
 import InspectorDashboard from './components/InspectorDashboard';
@@ -65,7 +64,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/chatbot',
-    element: <Layout showHeader><Chatbot /></Layout>,
+    element: <Navigate to="/" replace />,
   },
   // Wildcard: redirect unknown paths to root
   {
