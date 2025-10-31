@@ -25,3 +25,12 @@ dist-ssr
 build/*
 .trace
 .coverage*
+# Ignore environment files (secrets)
+.env
+.env.*
+**/.env
+**/.env.*
+frontend/.env
+frontend/.env.*
+backend/.env
+backend/.env.*

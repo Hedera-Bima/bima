@@ -4,9 +4,12 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+const OpenAI = require('openai');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
 
 // Middleware
 app.use(cors());
@@ -26,6 +29,36 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${uuidv4()}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
+  }
+});
+
+// Chat proxy to OpenAI (secure, uses backend API key)
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { messages } = req.body || {};
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'Missing messages array' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'OPENAI_API_KEY not configured on server' });
+    }
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const completion = await openai.chat.completions.create({
+      model: MODEL,
+      messages,
+      temperature: 0.7,
+    });
+
+    const reply = completion.choices?.[0]?.message?.content || '';
+    return res.json({ reply });
+  } catch (error) {
+    const errPayload = error?.response?.data || { message: error.message || 'Unknown error' };
+    console.error('OpenAI proxy error:', errPayload);
+    const payload = process.env.NODE_ENV === 'production' ? { error: 'Failed to get response from model' } : { error: 'Failed to get response from model', details: errPayload };
+    return res.status(500).json(payload);
   }
 });
 

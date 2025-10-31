@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from './Header';
 import { Footer } from './Footer';
+import Chatbot from '../Pages/Chatbot';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,8 @@ const Layout: React.FC<LayoutProps> = ({ children, headerAfter = false, showHead
       </main>
       {showHeader && headerAfter && <Header />}
       <Footer />
+      {/* Global Chatbot visible on all pages */}
+      <Chatbot />
     </div>
   );
 };

@@ -823,7 +823,7 @@ const LandDetails: React.FC = () => {
 
                 <div className="text-center mt-3">
                   <p className="text-xs text-muted-foreground">
-                    Secure blockchain transaction • Instant ownership transfer
+                    Secure Hedera transaction • Instant ownership transfer
                   </p>
                 </div>
               </div>

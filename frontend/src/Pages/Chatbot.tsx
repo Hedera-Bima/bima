@@ -26,22 +26,46 @@ const StunningChatbot = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputMessage(e.target.value);
   };
 
-  const simulateBotResponse = (userMsg) => {
-    const responses = [
-      "That's a brilliant question! Let me analyze that for you... 🤖",
-      "I'm processing your request with advanced AI algorithms! ⚡",
-      "Excellent! Here's what my neural networks suggest... 🧠",
-      "Great query! Let me tap into my knowledge base for you... 💡",
-      "Fascinating! I've analyzed your request and here's what I found... 🎯"
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
-  const handleSubmit = () => {
+  const fetchBotReply = async (userText: string): Promise<string> => {
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: 'You are BIMA Assistant, a helpful assistant for a land marketplace. Be concise and friendly.' },
+            { role: 'user', content: userText }
+          ]
+        })
+      });
+      if (!res.ok) {
+        let details: any = undefined;
+        try {
+          details = await res.json();
+        } catch {}
+        console.error('Chat backend error payload:', details || (await res.text()));
+        throw new Error('Network response was not ok');
+      }
+      const data = await res.json();
+      return data.reply || 'Sorry, I could not generate a response.';
+    } catch (err) {
+      console.error('Chat error:', err);
+      return 'Sorry, I had trouble reaching the AI service. Please try again.';
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!inputMessage.trim()) return;
     
     const userMessage = { 
@@ -52,22 +76,24 @@ const StunningChatbot = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-    
-    setTimeout(() => {
+    try {
+      const botText = await fetchBotReply(userMessage.text);
       const botMessage = { 
-        text: simulateBotResponse(userMessage.text), 
+        text: botText, 
         sender: 'bot',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMessage]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      const botMessage = { 
+        text: 'Sorry, I had trouble reaching the AI service. Please try again.',
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, botMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1800);
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
     }
   };
 

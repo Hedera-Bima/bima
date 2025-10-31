@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Wallet } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { connectHashpack } from '@/lib/hashpack';
+import { openConnectModal, onSessionEvent } from '@/wallet/hederaConnector';
+import { HederaSessionEvent } from '@hashgraph/hedera-wallet-connect';
 import { Link, useLocation } from 'react-router-dom';
 
 const Header: React.FC = () => {
@@ -34,16 +35,26 @@ const Header: React.FC = () => {
     setActiveSection(id);
   }, [location.pathname]);
 
+  // No persisted session support for WalletConnect path here; we reflect state once AccountsChanged fires
+
   const handleConnect = async () => {
     if (isConnecting) return;
     try {
       setIsConnecting(true);
-      const { accountIds } = await connectHashpack('testnet');
-      if (accountIds && accountIds.length > 0) {
-        setAccountId(accountIds[0]);
-      }
+      await openConnectModal();
+      // Register once per click to ensure we capture the immediate event
+      onSessionEvent(HederaSessionEvent.AccountsChanged, (payload: any) => {
+        try {
+          // Accept a variety of payload shapes
+          const list = Array.isArray(payload) ? payload : (payload?.accounts ?? payload?.accountIds ?? []);
+          const first = Array.isArray(list) ? list[0] : null;
+          if (typeof first === 'string') setAccountId(first);
+        } catch (err) {
+          console.error('Failed to parse AccountsChanged payload', err, payload);
+        }
+      });
     } catch (e) {
-      console.error('Failed to connect to HashPack:', e);
+      console.error('Failed to open WalletConnect modal:', e);
     } finally {
       setIsConnecting(false);
     }
@@ -120,17 +131,16 @@ const Header: React.FC = () => {
 
           {/* Theme Toggle & Connect Wallet Button - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
-            <ThemeToggle />
             <Button
               type="button"
               aria-label="Connect Wallet"
               onClick={handleConnect}
               disabled={isConnecting}
-              className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
+              className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <Wallet className="w-5 h-5" />
               <span>
-                {isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId.slice(0,6)}…${accountId.slice(-4)}` : 'Connect Wallet'}
+                {isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId}` : 'Connect Wallet'}
               </span>
             </Button>
           </div>
@@ -182,7 +192,7 @@ const Header: React.FC = () => {
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg disabled:opacity-70"
                 >
                   <Wallet className="w-4 h-4" />
-                  <span>{isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId.slice(0,6)}…${accountId.slice(-4)}` : 'Connect Wallet'}</span>
+                  <span>{isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId}` : 'Connect Wallet'}</span>
                 </Button>
               </div>
             </div>

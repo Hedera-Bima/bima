@@ -32,6 +32,7 @@ const router = createBrowserRouter([
   {
     path: '/inspectors',
     element: <Layout showHeader><InspectorsPage /></Layout>,
+   
   },
   {
     path: '/inspector-dashboard',
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
   {
     path: '/land/:landId',
     element: <Layout showHeader><LandDetails /></Layout>,
+    
   },
   // How it works
   {
@@ -66,6 +68,7 @@ const router = createBrowserRouter([
   {
     path: '/chatbot',
     element: <Layout showHeader><Chatbot /></Layout>,
+    element: <Navigate to="/" replace />,
   },
   // Wildcard: redirect unknown paths to root
   {
@@ -80,6 +83,7 @@ if (!rootElement) {
 }
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
+    <RouterProvider router={router} />
     <RouterProvider router={router} />
   </React.StrictMode>
 );
