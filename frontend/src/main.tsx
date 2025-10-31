@@ -7,7 +7,6 @@ import Hero from './components/Hero';
 import Chatbot from './Pages/Chatbot';
 import Layout from './components/Layout';
 import InspectorsPage from './components/InspectorsPage';
-import InspectorsPage from './components/InspectorsPage';
 import InspectorDashboard from './components/InspectorDashboard';
 import SellerDashboard from './components/SellerDashboard';
 import LandDetails from './components/LandDetails';
@@ -33,7 +32,7 @@ const router = createBrowserRouter([
   {
     path: '/inspectors',
     element: <Layout showHeader><InspectorsPage /></Layout>,
-    element: <Layout showHeader><InspectorsPage /></Layout>,
+   
   },
   {
     path: '/inspector-dashboard',
@@ -42,7 +41,7 @@ const router = createBrowserRouter([
   {
     path: '/land/:landId',
     element: <Layout showHeader><LandDetails /></Layout>,
-    element: <Layout showHeader><LandDetails /></Layout>,
+    
   },
   // How it works
   {
