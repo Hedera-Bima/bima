@@ -191,7 +191,7 @@ Tech Stack
    ```
 
 ### Running Environment
-- **Frontend**: React application running on `http://localhost:3000`
+- **Frontend**: React application running on `https://bima11-hedera.vercel.app/`
 - **Backend**: Node.js API running on `http://localhost:3001`
 - **Blockchain**: Hedera Testnet with real-time transaction processing
 - **Storage**: IPFS via Web3.Storage for document persistence
