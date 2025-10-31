@@ -8,8 +8,8 @@
 [![Tests](https://img.shields.io/badge/Tests-Passing-green?style=for-the-badge)](https://github.com/your-username/bima/actions)
 
 ## 📋 Project Documentation
-- **📊 Pitch Deck**: [View Our Presentation](https://drive.google.com/file/d/your-pitch-deck-link)
-- **🔐 Hedera Certification**: [View Certification Badge](https://drive.hedera.com/your-certification)
+- **📊 Pitch Deck**: [View Our Presentation](https://docs.google.com/presentation/d/10I7Pw_kjgIZsvBHhTH_MazTGst457HE0/edit?usp=sharing&ouid=103572532230510575942&rtpof=true&sd=true)
+- **🔐 Hedera Certification**: [View Certification Badge](https://drive.google.com/file/d/1A-kfDIbVlSURD9H2LO_Rzdoecd2P3Qpk/view?usp=sharing)
 - **👥 Judging Access**: Collaborator invited: `Hackathon@hashgraph-association.com`
 
 ## 🌍 Overview
@@ -330,9 +330,10 @@ Tech Stack
 
 | Name | Role | Contact |
 |------|------|---------|
-| Team Member 1 | Blockchain Lead | [email@example.com](mailto:email@example.com) |
-| Team Member 2 | Full-Stack Developer | [email@example.com](mailto:email@example.com) |
-| Team Member 3 | UI/UX Designer | [email@example.com](mailto:email@example.com) |
+| John Mokaya| Front End Developer | mokayaj857@gmail.com |
+| Mary Njoroge| Project Manager | mariannapeters203@gmail.com |
+| Irene Njoroge| Smart Conract Developer| irenenditi1@gmail.com |
+|Joseph Okumu| Back End Developer | jokumu25@gmail.com |
 
 ## 🤝 Contributing
 
