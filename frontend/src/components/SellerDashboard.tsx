@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Plus, MapPin, Clock, CheckCircle2, 
   FileText, Upload, DollarSign, Eye, Edit3, 
   TrendingUp, Users, Shield, 
-  Image as ImageIcon, Download, X
+  Image as ImageIcon, X
 } from "lucide-react";
+import { api } from '../lib/api';
 
 interface LandListing {
   id: string;
@@ -22,6 +23,7 @@ interface LandListing {
   inquiries: number;
   documents: string[];
   images: number;
+  metadataHash?: string; // Added for minting
 }
 
 interface SellerStats {
@@ -33,56 +35,6 @@ interface SellerStats {
   successRate: number;
 }
 
-const mockListings: LandListing[] = [
-  {
-    id: "PROP-2024-001",
-    title: "Prime Commercial Land in Karen",
-    location: "Nairobi, Karen Estate",
-    area: "2.5 acres",
-    price: "45,000,000 KES",
-    status: "verified",
-    createdDate: "2024-01-10",
-    verificationProgress: 100,
-    inspectorsAssigned: 3,
-    requiredInspectors: 3,
-    viewCount: 127,
-    inquiries: 8,
-    documents: ["Title Deed", "Survey Report", "Tax Certificate"],
-    images: 12
-  },
-  {
-    id: "PROP-2024-002", 
-    title: "Residential Plot in Milimani",
-    location: "Kisumu, Milimani",
-    area: "1.2 acres",
-    price: "18,500,000 KES",
-    status: "pending-verification",
-    createdDate: "2024-01-14",
-    verificationProgress: 67,
-    inspectorsAssigned: 2,
-    requiredInspectors: 2,
-    viewCount: 45,
-    inquiries: 3,
-    documents: ["Title Deed", "Survey Report"],
-    images: 8
-  },
-  {
-    id: "PROP-2024-003",
-    title: "Beachfront Property in Nyali", 
-    location: "Mombasa, Nyali",
-    area: "0.8 acres",
-    price: "32,000,000 KES",
-    status: "draft",
-    createdDate: "2024-01-16",
-    verificationProgress: 0,
-    inspectorsAssigned: 0,
-    requiredInspectors: 2,
-    viewCount: 0,
-    inquiries: 0,
-    documents: ["Title Deed"],
-    images: 4
-  }
-];
 
 const sellerStats: SellerStats = {
   totalListings: 8,
@@ -156,6 +108,134 @@ export default function SellerDashboard() {
     taxCertificate: null as File | null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMintingId, setIsMintingId] = useState<string | null>(null);
+  const [hederaListings, setHederaListings] = useState<LandListing[]>([]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<any>(null);
+  const [editMeta, setEditMeta] = useState<any>(null);
+  const [editFiles, setEditFiles] = useState<File[]>([]);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  useEffect(() => {
+    async function loadParcels() {
+      try {
+        const res = await api.getParcels();
+        const items = Array.isArray(res?.items) ? res.items : [];
+        const mapped: LandListing[] = items.map((p: any) => ({
+          id: String(p.landId),
+          title: p.location || 'Land Parcel',
+          location: p.location || 'Unknown',
+          area: p.size || '',
+          price: (p.price ?? '').toString(),
+          status: (p.status === 'minted' ? 'verified' : p.status === 'pending' ? 'pending-verification' : 'listed') as any,
+          createdDate: new Date(p.submittedAt || Date.now()).toISOString(),
+          verificationProgress: p.status === 'pending' ? 50 : 100,
+          inspectorsAssigned: (p.approvals?.length ?? 0),
+          requiredInspectors: 2,
+          viewCount: 0,
+          inquiries: 0,
+          documents: [],
+          images: 0,
+          metadataHash: p.metadataHash
+        }));
+        setHederaListings(mapped);
+      } catch (e) {
+        setHederaListings([]);
+      }
+    }
+    loadParcels();
+  }, []);
+
+  const openEdit = async (listing: any) => {
+    try {
+      if (!listing?.metadataHash) return;
+      const r = await fetch(`https://gateway.pinata.cloud/ipfs/${listing.metadataHash}?cb=${Date.now()}`);
+      const meta = r.ok ? await r.json() : {};
+      setEditTarget(listing);
+      setEditMeta(meta);
+      setEditFiles([]);
+      setEditOpen(true);
+    } catch {
+      setEditTarget(listing);
+      setEditMeta({});
+      setEditFiles([]);
+      setEditOpen(true);
+    }
+  };
+
+  const handleEditFiles = (files: FileList | null) => {
+    if (!files) return;
+    const arr = Array.from(files);
+    setEditFiles(prev => [...prev, ...arr]);
+  };
+
+  const saveEdit = async () => {
+    if (!editTarget) return;
+    try {
+      setSavingEdit(true);
+      const uploaded: string[] = [];
+      for (const f of editFiles) {
+        const res = await api.uploadFileToIPFS(f as any);
+        if (res?.ipfsHash) uploaded.push(res.ipfsHash);
+      }
+      const existingImages = Array.isArray(editMeta?.images) ? editMeta.images : [];
+      const legacyAdditional = Array.isArray(editMeta?.documents?.additional) ? editMeta.documents.additional : [];
+      const mergedImages = [
+        ...existingImages,
+        ...uploaded.map(cid => ({ cid })),
+        ...(!existingImages.length && legacyAdditional.length ? legacyAdditional.map((cid: string) => ({ cid })) : [])
+      ];
+
+      const documents = Array.isArray(editMeta?.documents)
+        ? editMeta.documents
+        : (() => {
+            const arr: any[] = [];
+            if (editMeta?.documents?.titleDeed) arr.push({ name: 'Title Deed', type: 'title-deed', cid: editMeta.documents.titleDeed });
+            if (editMeta?.documents?.surveyReport) arr.push({ name: 'Survey Report', type: 'survey', cid: editMeta.documents.surveyReport });
+            if (Array.isArray(editMeta?.documents?.additional)) for (const cid of editMeta.documents.additional) arr.push({ name: 'Attachment', type: 'certificate', cid });
+            return arr;
+          })();
+
+      const nextMeta = {
+        ...editMeta,
+        images: mergedImages,
+        documents
+      };
+      const up = await api.uploadJSONToIPFS(nextMeta);
+      const newHash = up?.ipfsHash;
+      if (!newHash) throw new Error('Failed to upload updated metadata');
+      await api.updateParcel(editTarget.id, { metadataHash: newHash });
+      setEditOpen(false);
+      setEditTarget(null);
+      setEditMeta(null);
+      setEditFiles([]);
+      const res = await api.getParcels();
+      const items = Array.isArray(res?.items) ? res.items : [];
+      const mapped: LandListing[] = items.map((p: any) => ({
+        id: String(p.landId),
+        title: p.location || 'Land Parcel',
+        location: p.location || 'Unknown',
+        area: p.size || '',
+        price: (p.price ?? '').toString(),
+        status: (p.status === 'minted' ? 'verified' : p.status === 'pending' ? 'pending-verification' : 'listed') as any,
+        createdDate: new Date(p.submittedAt || Date.now()).toISOString(),
+        verificationProgress: p.status === 'pending' ? 50 : 100,
+        inspectorsAssigned: (p.approvals?.length ?? 0),
+        requiredInspectors: 2,
+        viewCount: 0,
+        inquiries: 0,
+        documents: [],
+        images: 0,
+        metadataHash: p.metadataHash
+      }));
+      setHederaListings(mapped);
+      alert('Listing updated successfully');
+    } catch (e: any) {
+      alert(e?.message || 'Failed to update listing');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -180,50 +260,102 @@ export default function SellerDashboard() {
     setUploadedDocs(prev => ({ ...prev, [docType]: null }));
   };
 
+  const TOKEN_ID = '0.0.7158415';
+  const handleMint = async (listing: LandListing & { metadataHash?: string }) => {
+    try {
+      if (listing.status !== 'verified') return;
+      if (!listing.metadataHash) {
+        alert('No metadataHash found for this listing. Ensure metadata was uploaded to IPFS during creation.');
+        return;
+      }
+      setIsMintingId(listing.id);
+      const metadata = {
+        metadataHash: listing.metadataHash,
+        size: listing.area,
+        price: listing.price,
+        location: listing.location
+      };
+      await api.mintLandNFT(TOKEN_ID, metadata);
+      alert('NFT minted successfully!');
+    } catch (e: any) {
+      alert(e?.message || 'Failed to mint NFT');
+    } finally {
+      setIsMintingId(null);
+    }
+  };
+
   const handleSubmit = async (isDraft: boolean = false) => {
     setIsSubmitting(true);
     try {
-      const submitFormData = new FormData();
-      
-      // Add form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        submitFormData.append(key, value);
-      });
-      
-      // Add images
-      uploadedImages.forEach(image => {
-        submitFormData.append('images', image);
-      });
-      
-      // Add documents
-      Object.entries(uploadedDocs).forEach(([key, file]) => {
-        if (file) {
-          submitFormData.append(key, file);
+      // 1) Optionally upload documents to IPFS if provided
+      let titleDeedHash: string | null = null;
+      let surveyReportHash: string | null = null;
+      let additional: string[] = [];
+      try {
+        if (uploadedDocs.titleDeed) {
+          const res = await api.uploadFileToIPFS(uploadedDocs.titleDeed as any);
+          titleDeedHash = res?.ipfsHash || null;
         }
+        if (uploadedDocs.surveyReport) {
+          const res = await api.uploadFileToIPFS(uploadedDocs.surveyReport as any);
+          surveyReportHash = res?.ipfsHash || null;
+        }
+        // images as additional optional documents
+        for (const img of uploadedImages) {
+          const res = await api.uploadFileToIPFS(img as any);
+          if (res?.ipfsHash) additional.push(res.ipfsHash);
+        }
+      } catch {}
+
+      // 2) Build metadata JSON (images array + documents array) and upload to IPFS
+      const images = Array.isArray(additional) ? additional.map((cid) => ({ cid })) : [];
+      const documents: Array<{ name: string; type: 'title-deed' | 'survey' | 'certificate' | 'inspection'; cid: string }>= [];
+      if (titleDeedHash) documents.push({ name: 'Title Deed', type: 'title-deed', cid: titleDeedHash });
+      if (surveyReportHash) documents.push({ name: 'Survey Report', type: 'survey', cid: surveyReportHash });
+
+      const metadata = {
+        title: formData.title,
+        size: formData.size,
+        price: formData.price,
+        location: formData.location,
+        description: formData.description,
+        landType: formData.landType,
+        zoning: formData.zoning,
+        utilities: formData.utilities,
+        accessibility: formData.accessibility,
+        nearbyAmenities: formData.nearbyAmenities,
+        seller: {
+          name: formData.sellerName,
+          phone: formData.sellerPhone,
+          email: formData.sellerEmail,
+        },
+        images,            // <- used by Hero and LandDetails
+        documents,         // <- used by LandDetails documents section
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+      };
+      const { ipfsHash: metadataHash } = await api.uploadJSONToIPFS(metadata);
+
+      // 3) Create verification entry on Hedera backend (source of truth)
+      await api.createLandNFT({
+        metadataHash,
+        size: formData.size,
+        price: formData.price,
+        location: formData.location,
       });
-      
-      const response = await fetch('http://localhost:5000/api/listings', {
-        method: 'POST',
-        body: submitFormData
+
+      alert(isDraft ? 'Listing created on Hedera successfully!' : 'Listing submitted for verification on Hedera!');
+      // Reset form
+      setFormData({
+        title: '', location: '', size: '', price: '', description: '',
+        landType: '', zoning: '', utilities: '', accessibility: '',
+        nearbyAmenities: '', sellerName: '', sellerPhone: '', sellerEmail: ''
       });
-      
-      if (response.ok) {
-        await response.json();
-        alert(isDraft ? 'Listing created successfully!' : 'Listing submitted for verification!');
-        // Reset form
-        setFormData({
-          title: '', location: '', size: '', price: '', description: '',
-          landType: '', zoning: '', utilities: '', accessibility: '',
-          nearbyAmenities: '', sellerName: '', sellerPhone: '', sellerEmail: ''
-        });
-        setUploadedImages([]);
-        setUploadedDocs({ titleDeed: null, surveyReport: null, taxCertificate: null });
-        setActiveTab('listings');
-      } else {
-        throw new Error('Failed to submit listing');
-      }
+      setUploadedImages([]);
+      setUploadedDocs({ titleDeed: null, surveyReport: null, taxCertificate: null });
+      setActiveTab('listings');
     } catch (error) {
-      alert('Error submitting listing. Please try again.');
+      alert('Error submitting listing to Hedera. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -302,6 +434,25 @@ export default function SellerDashboard() {
         </div>
       </section>
 
+      {editOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-lg rounded-xl bg-card p-6 border border-border/50">
+            <h3 className="text-lg font-semibold mb-4">Edit Listing</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Add Images</label>
+                <input type="file" multiple accept="image/*" onChange={(e) => handleEditFiles(e.target.files)} />
+                <div className="text-xs text-muted-foreground mt-2">Selected: {editFiles.length}</div>
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-end gap-2">
+              <button onClick={() => { setEditOpen(false); setEditFiles([]); }} className="px-3 py-2 rounded-lg bg-card/50 border border-border/50 text-sm">Cancel</button>
+              <button onClick={saveEdit} disabled={savingEdit} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm">{savingEdit ? 'Saving...' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
@@ -352,7 +503,7 @@ export default function SellerDashboard() {
               </div>
 
               <div className="grid gap-6">
-                {mockListings.map((listing, index) => (
+                {hederaListings.map((listing, index) => (
                   <motion.div
                     key={listing.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -384,6 +535,29 @@ export default function SellerDashboard() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Mint button for verified listings */}
+                    {listing.status === 'verified' && (
+                      <div className="mb-4 flex gap-2 items-center">
+                        <button
+                          onClick={() => handleMint(listing as any)}
+                          disabled={isMintingId === listing.id}
+                          className="px-3 py-1 rounded-lg border border-emerald-500 text-emerald-600 hover:bg-emerald-500/10 text-sm"
+                        >
+                          {isMintingId === listing.id ? 'Minting...' : 'Mint NFT (Hedera)'}
+                        </button>
+                        {listing.metadataHash && (
+                          <a
+                            href={`https://gateway.pinata.cloud/ipfs/${listing.metadataHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-500/10 text-sm"
+                          >
+                            View Metadata
+                          </a>
+                        )}
+                      </div>
+                    )}
 
                     {/* Verification Progress */}
                     {listing.status === 'pending-verification' && (
@@ -446,7 +620,7 @@ export default function SellerDashboard() {
                           <Eye className="w-3 h-3" />
                           View
                         </button>
-                        <button className="flex items-center gap-2 px-3 py-1 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors text-sm">
+                        <button onClick={() => openEdit(listing)} className="flex items-center gap-2 px-3 py-1 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors text-sm">
                           <Edit3 className="w-3 h-3" />
                           Edit
                         </button>

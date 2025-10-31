@@ -21,11 +21,10 @@ import {
   Navigation,
   Zap
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { api } from '../lib/api';
 
-interface LandDetailsProps {
-  landId: string;
-}
+// Route-driven component: landId is read from URL params
 
 interface PropertyImage {
   id: string;
@@ -35,6 +34,7 @@ interface PropertyImage {
 }
 
 interface Document {
+  cid: any;
   id: string;
   name: string;
   type: 'title-deed' | 'survey' | 'certificate' | 'inspection';
@@ -52,128 +52,105 @@ interface InspectionReport {
   verified: boolean;
 }
 
-const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
+const LandDetails: React.FC = () => {
+  const params = useParams<{ landId: string }>();
+  const landId = params.landId as string | undefined;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'location' | 'documents' | 'history'>('overview');
   const [isLiked, setIsLiked] = useState(false);
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMinting, setIsMinting] = useState(false);
 
   // Fetch property data from backend
   useEffect(() => {
     const fetchProperty = async () => {
       try {
         setLoading(true);
-        console.log('Fetching listing with ID:', landId);
-        const response = await fetch(`http://localhost:5000/api/listings/${landId}`);
-        console.log('Response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Fetched listing data:', data);
-          
-          // Handle both array and object responses
-          let listing;
-          if (Array.isArray(data)) {
-            // If it's an array, find the listing with matching ID
-            listing = data.find(item => item.id === landId) || data[0];
-            console.log('Found matching listing in array:', listing ? 'Yes' : 'No (using first item)');
-          } else {
-            listing = data;
-          }
-          console.log('Processed listing:', listing);
-          console.log('Price value:', listing?.price, 'Type:', typeof listing?.price);
-          
-          // Ensure price is properly formatted
-          let formattedPrice = "0";
-          if (listing && listing.price) {
-            if (typeof listing.price === 'number') {
-              formattedPrice = listing.price.toLocaleString();
-            } else if (typeof listing.price === 'string' && listing.price !== '') {
-              // If it's already a formatted string, use it
-              formattedPrice = listing.price;
-            }
-          }
-          console.log('Formatted price:', formattedPrice);
-          
-          // Transform backend data to match component expectations
-          setProperty({
-            id: listing?.id || landId,
-            title: listing?.title || "Property Title",
-            location: listing?.location || "Location",
-            coordinates: { lat: -1.1719, lng: 36.8315 }, // Default coordinates
-            price: formattedPrice,
-            currency: "KES",
-            area: listing?.size || "N/A",
-            description: listing?.description || "No description available",
-            features: [
-              listing?.landType && `Land Type: ${listing.landType}`,
-              listing?.zoning && `Zoning: ${listing.zoning}`,
-              listing?.utilities && `Utilities: ${listing.utilities}`,
-              listing?.accessibility && `Road Access: ${listing.accessibility}`,
-              listing?.nearbyAmenities && `Nearby Amenities: ${listing.nearbyAmenities}`
-            ].filter(Boolean),
-            ownerDID: "did:hedera:testnet:z9KmF47C1xvVk2D8nQw3...",
-            ownerName: listing?.seller?.name || "Property Owner",
-            ownerContact: {
-              phone: listing?.seller?.phone || "Contact via platform",
-              email: listing?.seller?.email || "Contact via platform"
-            },
-            verificationStatus: listing?.status === 'verified' ? 'verified' : listing?.status === 'pending_verification' ? 'pending' : 'unverified',
-            listedDate: listing?.createdAt ? new Date(listing.createdAt).toLocaleDateString() : "N/A",
-            lastUpdated: listing?.updatedAt ? new Date(listing.updatedAt).toLocaleDateString() : listing?.createdAt ? new Date(listing.createdAt).toLocaleDateString() : "N/A",
-            views: Math.floor(Math.random() * 500) + 50, // Mock views
-            inspections: Math.floor(Math.random() * 20) + 1, // Mock inspections
-            images: listing?.images || [],
-            documents: listing?.documents || []
-          });
-        } else {
-          console.log('Listing not found in backend, using dummy data for landId:', landId);
-          console.log('Response status:', response.status);
-          console.log('Response body:', await response.text());
-          // Fallback to dummy data if listing not found in backend - match dummy listing prices
-          const dummyData = {
-            "1": { price: "45,000,000", title: "Premium Land in Karen", location: "Nairobi, Karen", area: "2.5 acres" },
-            "2": { price: "78,500,000", title: "Agricultural Land in Limuru", location: "Kiambu, Limuru", area: "5.0 acres" },
-            "3": { price: "120,000,000", title: "Commercial Land in Konza", location: "Machakos, Konza", area: "10.0 acres" },
-            "4": { price: "95,000,000", title: "Residential Land in Elementaita", location: "Nakuru, Elementaita", area: "7.5 acres" }
-          };
-          
-          const dummy = dummyData[landId as keyof typeof dummyData] || dummyData["1"];
-          
-          setProperty({
-            id: landId,
-            title: dummy.title,
-            location: dummy.location,
-            coordinates: { lat: -1.1719, lng: 36.8315 },
-            price: dummy.price,
-            currency: "KES",
-            area: dummy.area,
-            description: "Exceptional agricultural land with fertile soil, perfect for farming or development. Located in the heart of Kenya with excellent accessibility and infrastructure.",
-            features: [
-              "Fertile red soil perfect for agriculture",
-              "Access to clean water supply",
-              "Electricity connection available",
-              "All-weather road access",
-              "Fenced perimeter",
-              "Clear title deed"
-            ],
-            ownerDID: "did:hedera:testnet:z9KmF47C1xvVk2D8nQw3...",
-            ownerName: "John Kamau",
-            ownerContact: {
-              phone: "+254 712 345 678",
-              email: "john.kamau@email.com"
-            },
-            verificationStatus: "verified" as const,
-            listedDate: "2024-01-15",
-            lastUpdated: "2024-01-20",
-            views: 234,
-            inspections: 12,
-            images: [],
-            documents: []
-          });
+        if (!landId) {
+          setError('Invalid property ID');
+          setLoading(false);
+          return;
         }
+        const res = await api.getParcels();
+        const items = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
+        const match = items.find((p: any) => String(p.landId) === String(landId));
+        if (!match) {
+          setError('Property not found');
+          setProperty(null);
+          setLoading(false);
+          return;
+        }
+        let meta: any = null;
+        if (match.metadataHash) {
+          try {
+            const m = await fetch(`https://gateway.pinata.cloud/ipfs/${match.metadataHash}?cb=${Date.now()}`);
+            if (m.ok) meta = await m.json();
+          } catch {}
+        }
+        // Normalize images and documents from metadata (support old and new formats)
+        const imagesFromMeta: any[] = (() => {
+          const prefer = (arr: any) => (Array.isArray(arr) && arr.length > 0) ? arr : null;
+          const imgs = prefer(meta?.images) || prefer(meta?.photos) || prefer(meta?.media);
+          if (imgs) return imgs;
+          // single image field
+          if (typeof meta?.image === 'string') return [meta.image];
+          // backward-compat: documents.additional used to hold image hashes
+          const add = meta?.documents?.additional;
+          if (Array.isArray(add) && add.length > 0) return add;
+          // last resort: scan for first CID-like string in metadata
+          const cidRegex = /Qm[1-9A-Za-z]{44}/;
+          const scan = (obj: any): string | null => {
+            if (!obj) return null;
+            if (typeof obj === 'string' && cidRegex.test(obj)) return obj;
+            if (Array.isArray(obj)) {
+              for (const v of obj) { const f = scan(v); if (f) return f; }
+            } else if (typeof obj === 'object') {
+              for (const k of Object.keys(obj)) { const f = scan(obj[k]); if (f) return f; }
+            }
+            return null;
+          };
+          const found = scan(meta);
+          return found ? [found] : [];
+        })();
+
+        const documentsFromMeta: any[] = (() => {
+          if (Array.isArray(meta?.documents)) return meta.documents;
+          const arr: any[] = [];
+          if (meta?.documents?.titleDeed) arr.push({ name: 'Title Deed', type: 'title-deed', cid: meta.documents.titleDeed });
+          if (meta?.documents?.surveyReport) arr.push({ name: 'Survey Report', type: 'survey', cid: meta.documents.surveyReport });
+          if (Array.isArray(meta?.documents?.additional)) {
+            for (const cid of meta.documents.additional) arr.push({ name: 'Attachment', type: 'certificate', cid });
+          }
+          return arr;
+        })();
+
+        const formattedPrice = match?.price ? String(match.price) : "0";
+        setProperty({
+          id: String(match.landId),
+          title: meta?.title || match.location || "Property",
+          location: meta?.location || match.location || "Unknown",
+          coordinates: meta?.coordinates || { lat: -1.1719, lng: 36.8315 },
+          price: formattedPrice,
+          currency: meta?.currency || "KES",
+          area: meta?.size || match.size || "N/A",
+          description: meta?.description || "",
+          features: Array.isArray(meta?.features) ? meta.features : [],
+          ownerDID: meta?.owner?.did || "",
+          ownerName: meta?.owner?.name || "",
+          ownerContact: { phone: meta?.owner?.phone || "", email: meta?.owner?.email || "" },
+          verificationStatus: match.status === 'minted' ? 'verified' : match.status === 'pending' ? 'pending' : 'unverified',
+          listedDate: match.submittedAt ? new Date(match.submittedAt).toLocaleDateString() : "N/A",
+          lastUpdated: match.updatedAt ? new Date(match.updatedAt).toLocaleDateString() : match.submittedAt ? new Date(match.submittedAt).toLocaleDateString() : "N/A",
+          views: 0,
+          inspections: match.approvals?.length ?? 0,
+          images: imagesFromMeta,
+          documents: documentsFromMeta,
+          metadataHash: match.metadataHash || null,
+          nftSerial: match.nftSerial,
+          verificationHistory: match.verificationHistory || []
+        });
       } catch (err) {
         console.error('Failed to fetch property:', err);
         setError('Failed to load property details');
@@ -185,14 +162,22 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
     fetchProperty();
   }, [landId]);
 
-  // Transform backend images or use fallback
+  // Transform backend/IPFS images or use fallback
   const images: PropertyImage[] = property?.images?.length > 0 
-    ? property.images.map((img: any, index: number) => ({
-        id: index.toString(),
-        url: `http://localhost:5000${img.path}`,
-        title: `Property Image ${index + 1}`,
-        description: `Property view ${index + 1}`
-      }))
+    ? property.images.map((img: any, index: number) => {
+        const cid = typeof img === 'string' ? img : (img?.cid || img?.ipfsHash || img?.hash || img?.image);
+        const url = img?.path
+          ? `http://localhost:5000${img.path}`
+          : cid
+            ? `https://gateway.pinata.cloud/ipfs/${cid}`
+            : (img?.url || `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop`);
+        return {
+          id: index.toString(),
+          url,
+          title: `Property Image ${index + 1}`,
+          description: `Property view ${index + 1}`
+        };
+      })
     : [
         {
           id: "1",
@@ -220,34 +205,16 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
         }
       ];
 
-  // Transform backend documents or use fallback
+  // Transform IPFS documents or use fallback
   const documents: Document[] = property?.documents?.length > 0
-    ? [
-        property.documents.titleDeed && {
-          id: "1",
-          name: "Title Deed Certificate",
-          type: "title-deed" as const,
-          verified: true,
-          uploadDate: new Date().toLocaleDateString(),
-          size: "2.4 MB"
-        },
-        property.documents.surveyReport && {
-          id: "2",
-          name: "Survey Report",
-          type: "survey" as const,
-          verified: true,
-          uploadDate: new Date().toLocaleDateString(),
-          size: "5.1 MB"
-        },
-        property.documents.taxCertificate && {
-          id: "3",
-          name: "Tax Certificate",
-          type: "certificate" as const,
-          verified: true,
-          uploadDate: new Date().toLocaleDateString(),
-          size: "1.2 MB"
-        }
-      ].filter(Boolean)
+    ? property.documents.map((doc: any, i: number) => ({
+        id: String(i + 1),
+        name: doc?.name || doc?.type || `Document ${i + 1}`,
+        type: (doc?.type || 'certificate'),
+        verified: true,
+        uploadDate: new Date().toLocaleDateString(),
+        size: doc?.size || '—'
+      }))
     : [
         {
           id: "1",
@@ -308,6 +275,32 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const TOKEN_ID = (import.meta as any).env?.VITE_TOKEN_ID || '0.0.7158415';
+  const nftUrl = property?.nftSerial ? `https://hashscan.io/testnet/nft/${TOKEN_ID}/${property.nftSerial}` : null;
+  const tokenUrl = `https://hashscan.io/testnet/token/${TOKEN_ID}`;
+  const handleMint = async () => {
+    try {
+      if (!property || property.verificationStatus !== 'verified') return;
+      if (!property.metadataHash) {
+        alert('Metadata hash not available for this listing. Please ensure the listing was created with IPFS metadata.');
+        return;
+      }
+      setIsMinting(true);
+      const metadata = {
+        metadataHash: property.metadataHash,
+        size: property.area,
+        price: property.price,
+        location: property.location
+      };
+      await api.mintLandNFT(TOKEN_ID, metadata);
+      alert('NFT minted successfully!');
+    } catch (e: any) {
+      alert(e?.message || 'Failed to mint NFT');
+    } finally {
+      setIsMinting(false);
+    }
   };
 
   const getDocumentIcon = (type: Document['type']) => {
@@ -549,6 +542,30 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                             <div className="text-sm text-muted-foreground">Verified</div>
                           </div>
                         </div>
+
+                        {/* On-chain Verification History (from backend) */}
+                        {property.verificationHistory?.length > 0 && (
+                          <div className="pt-6 border-t border-border/50">
+                            <h4 className="font-medium mb-3">On-chain Verification</h4>
+                            <div className="space-y-2 text-sm">
+                              {property.verificationHistory.map((h: any, i: number) => (
+                                <div key={i} className="flex items-center justify-between p-3 rounded-md border border-border/50">
+                                  <span className="font-medium">{h.role}</span>
+                                  <span className="text-muted-foreground">{h.name}</span>
+                                  <span className="text-muted-foreground">{new Date(h.date).toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* HashScan links */}
+                        <div className="pt-6 border-t border-border/50 flex items-center gap-3">
+                          <a href={tokenUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-md bg-card border border-border/50 hover:border-primary/50 text-sm">View Token on HashScan</a>
+                          {nftUrl && (
+                            <a href={nftUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-md bg-card border border-border/50 hover:border-primary/50 text-sm">View NFT #{property.nftSerial}</a>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -562,13 +579,20 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                           </div>
                         </div>
 
-                        {/* Mock Map Placeholder */}
-                        <div className="aspect-[16/9] bg-gradient-to-br from-emerald-100 to-blue-100 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg border border-border/50 flex items-center justify-center">
-                          <div className="text-center">
-                            <MapPin className="w-12 h-12 text-primary mx-auto mb-2" />
-                            <p className="text-muted-foreground">Interactive Map</p>
-                            <p className="text-sm text-muted-foreground">Lat: {property.coordinates.lat}, Lng: {property.coordinates.lng}</p>
+                        {/* Simple Map/Link from metadata coordinates */}
+                        <div className="aspect-[16/9] rounded-lg border border-border/50 flex items-center justify-between p-4 bg-card/40">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="w-5 h-5" />
+                            <span>Lat: {property.coordinates.lat}, Lng: {property.coordinates.lng}</span>
                           </div>
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${property.coordinates.lat},${property.coordinates.lng}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm"
+                          >
+                            Open in Maps
+                          </a>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -626,12 +650,22 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <button className="p-2 rounded-lg bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground transition-colors">
+                                  <a
+                                    href={doc.cid ? `https://gateway.pinata.cloud/ipfs/${doc.cid}` : '#'}
+                                    target={doc.cid ? '_blank' : undefined}
+                                    rel="noreferrer"
+                                    className="p-2 rounded-lg bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground transition-colors"
+                                  >
                                     <Eye className="w-4 h-4" />
-                                  </button>
-                                  <button className="p-2 rounded-lg bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground transition-colors">
+                                  </a>
+                                  <a
+                                    href={doc.cid ? `https://gateway.pinata.cloud/ipfs/${doc.cid}?download=1` : '#'}
+                                    target={doc.cid ? '_blank' : undefined}
+                                    rel="noreferrer"
+                                    className="p-2 rounded-lg bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground transition-colors"
+                                  >
                                     <Download className="w-4 h-4" />
-                                  </button>
+                                  </a>
                                 </div>
                               </div>
                             );
@@ -721,6 +755,20 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                   <div className="text-muted-foreground">{property.area}</div>
                 </div>
 
+                {/* On-chain badge and links */}
+                <div className="space-y-2 text-sm mb-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Token</span>
+                    <a href={tokenUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">View on HashScan</a>
+                  </div>
+                  {property.nftSerial && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">NFT Serial</span>
+                      <a href={nftUrl!} target="_blank" rel="noreferrer" className="text-primary hover:underline">#{property.nftSerial}</a>
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Status</span>
@@ -759,6 +807,19 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                   <Wallet className="w-6 h-6 relative z-10" />
                   <span className="relative z-10">Buy now</span>
                 </motion.button>
+
+                {/* Mint NFT Button - visible when verified */}
+                <button
+                  disabled={property.verificationStatus !== 'verified' || isMinting}
+                  onClick={handleMint}
+                  className={`mt-3 w-full px-6 py-3 rounded-lg border text-sm font-medium transition-colors ${
+                    property.verificationStatus === 'verified' && !isMinting
+                      ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-500/10'
+                      : 'border-border/50 text-muted-foreground cursor-not-allowed'
+                  }`}
+                >
+                  {isMinting ? 'Minting...' : 'Mint NFT (Hedera)'}
+                </button>
 
                 <div className="text-center mt-3">
                   <p className="text-xs text-muted-foreground">
@@ -814,6 +875,20 @@ const LandDetails: React.FC<LandDetailsProps> = ({ landId }) => {
                       <div className="text-xs text-muted-foreground">Smart contract execution</div>
                     </div>
                   </div>
+
+                  {property.metadataHash && (
+                    <div className="mt-4 p-3 rounded-lg border border-border/50">
+                      <div className="text-xs text-muted-foreground mb-1">IPFS Metadata</div>
+                      <a
+                        className="text-xs font-mono underline text-blue-500 break-all"
+                        href={`https://gateway.pinata.cloud/ipfs/${property.metadataHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {property.metadataHash}
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 

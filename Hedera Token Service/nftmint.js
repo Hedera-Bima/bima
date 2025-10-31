@@ -7,7 +7,7 @@ import {
 import dotenv from "dotenv";
 import readline from "readline";
 import fs from "fs";
-import { uploadToIPFS, uploadJSONToIPFS } from "./uploadToIPFS.js";
+import { uploadFileToIPFS, uploadJSONToIPFS } from "./uploadToIPFS.js";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const client = Client.forTestnet().setOperator(
 
 const verificationLogFile = "./verification-log.json";
 const nftLogFile = "./nft-log.json";
-const TOKEN_ID = "0.0.7158415";
+const TOKEN_ID = process.env.TOKEN_ID || "";
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const ask = (q) => new Promise((res) => rl.question(q, res));
@@ -60,7 +60,7 @@ async function main() {
       const filePath = await ask("Enter path to document file: ");
 
       console.log("📤 Uploading document to IPFS...");
-      const docHash = await uploadToIPFS(filePath);
+      const docHash = await uploadFileToIPFS(filePath);
 
       entry = {
         landId,

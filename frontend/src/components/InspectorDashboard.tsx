@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { 
   Shield, MapPin, Clock, CheckCircle2, AlertCircle, 
-  FileText, Camera, Award, TrendingUp, Users, 
+  FileText, Award, TrendingUp, 
   Eye, Download, Upload, Star, Badge, Coins
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { api } from '../lib/api';
+import React from "react";
 
 interface VerificationRequest {
   id: string;
@@ -31,6 +33,9 @@ interface InspectorStats {
   averageRating: number;
   specializations: string[];
 }
+
+type VerifyForm = { landId: string; role: 'Chief' | 'Surveyor'; name: string };
+type Parcel = { landId: number; status: string; location?: string; size?: string; price?: string; metadataHash?: string };
 
 const mockRequests: VerificationRequest[] = [
   {
@@ -131,7 +136,58 @@ const priorityConfig = {
 
 export default function InspectorDashboard() {
   const [activeTab, setActiveTab] = useState<'requests' | 'completed' | 'profile'>('requests');
-  const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
+  const [] = useState<VerificationRequest | null>(null);
+  const [verifyForm, setVerifyForm] = useState<VerifyForm>({ landId: '', role: 'Chief', name: '' });
+  const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
+  const [parcels, setParcels] = useState<Parcel[]>([]);
+  const [loadingParcels, setLoadingParcels] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  // Token ID required by backend for verification/mint workflows
+  const TOKEN_ID = (import.meta as any).env?.VITE_TOKEN_ID || '0.0.7158415';
+
+  async function loadPendingParcels() {
+    try {
+      setLoadingParcels(true);
+      const res = await api.getParcels('pending');
+      const items = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
+      setParcels(items as Parcel[]);
+    } catch (e: any) {
+      setParcels([]);
+    } finally {
+      setLoadingParcels(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPendingParcels();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function submitVerification(e: React.FormEvent) {
+    e.preventDefault();
+    setVerifyMsg(null);
+    try {
+      setSubmitting(true);
+      const landIdNum = Number(verifyForm.landId);
+      if (!Number.isFinite(landIdNum)) {
+        setVerifyMsg('Invalid Land ID');
+        return;
+      }
+      // Send role exactly as backend expects (e.g., "Chief" or "Surveyor") and include tokenId
+      const body = { landId: landIdNum, role: verifyForm.role as any, name: verifyForm.name, tokenId: TOKEN_ID };
+      const res = await api.verifyLand(body);
+      setVerifyMsg(`Success. Verified: ${String(res?.verified)}. Status: ${res?.status ?? res?.state ?? 'updated'}.`);
+      await loadPendingParcels();
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+      const backendMsg = (data && typeof data === 'object') ? JSON.stringify(data) : (data || err?.message);
+      const msg = backendMsg || 'Verification failed';
+      setVerifyMsg(status ? `HTTP ${status}: ${msg}` : String(msg));
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   const pendingRequests = mockRequests.filter(req => req.status === 'pending' || req.status === 'in-progress');
   const completedRequests = mockRequests.filter(req => req.status === 'completed');
@@ -247,6 +303,44 @@ export default function InspectorDashboard() {
               transition={{ delay: 0.4 }}
               className="space-y-6"
             >
+              <div className="p-4 rounded-xl bg-card/40 border border-border/50">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-bold">Backend Verification</h3>
+                  <button onClick={loadPendingParcels} disabled={loadingParcels} className="text-sm px-3 py-1 rounded-md bg-card border border-border/50 hover:border-primary/50 disabled:opacity-60">
+                    {loadingParcels ? 'Refreshing…' : 'Refresh Pending Parcels'}
+                  </button>
+                </div>
+                <form onSubmit={submitVerification} className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Land ID" value={verifyForm.landId} onChange={(e)=>setVerifyForm(v=>({ ...v, landId: e.target.value }))} />
+                  <select className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={verifyForm.role} onChange={(e)=>setVerifyForm(v=>({ ...v, role: e.target.value as any }))}>
+                    <option value="Chief">Chief</option>
+                    <option value="Surveyor">Surveyor</option>
+                  </select>
+                  <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Your Name" value={verifyForm.name} onChange={(e)=>setVerifyForm(v=>({ ...v, name: e.target.value }))} />
+                  <button type="submit" disabled={submitting || !verifyForm.landId || !verifyForm.name} className="rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm disabled:opacity-60">
+                    {submitting ? 'Submitting…' : 'Submit Approval'}
+                  </button>
+                </form>
+                {verifyMsg && <p className="mt-2 text-sm text-muted-foreground">{verifyMsg}</p>}
+                {parcels.length > 0 ? (
+                  <div className="mt-4 text-sm">
+                    <div className="font-medium mb-1">Pending Parcels</div>
+                    <ul className="space-y-1">
+                      {parcels.map(p => (
+                        <li key={p.landId} className="flex items-center justify-between gap-2 rounded-md border border-border/40 px-3 py-2">
+                          <span>#{p.landId} • {p.location ?? 'Unknown'} • {p.size ?? ''}</span>
+                          <div className="flex items-center gap-2">
+                            <code className="text-xs hidden md:block">{p.metadataHash}</code>
+                            <button onClick={()=>setVerifyForm(v=>({ ...v, landId: String(p.landId) }))} className="text-xs px-2 py-1 rounded-md bg-card border border-border/50 hover:border-primary/50">Use ID</button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-muted-foreground">No pending parcels.</p>
+                )}
+              </div>
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Verification Requests</h2>
                 <div className="text-sm text-muted-foreground">

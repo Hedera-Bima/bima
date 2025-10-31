@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { api } from '../lib/api';
 import { 
   MapPin, 
   Shield, 
@@ -8,10 +9,7 @@ import {
   Clock, 
   Sparkles, 
   ExternalLink,
-  TrendingUp,
-  DollarSign,
   Upload,
-  Download,
   Plus
 } from "lucide-react";
 
@@ -40,78 +38,10 @@ interface LandListing {
 }
 
 // Resolve available images from src/assets at build time (Vite)
-const assetImages = import.meta.glob("/src/assets/**/*.{png,jpg,jpeg,webp}", {
-  eager: true,
-  as: "url",
-}) as Record<string, string>;
 
-const findImageByName = (name: string): string | undefined => {
-  const lowerName = name.toLowerCase();
-  const entries = Object.entries(assetImages);
-  const match = entries.find(([path]) => path.toLowerCase().includes(`/${lowerName}.`));
-  if (match) return match[1];
-  // fallback: contains name anywhere in basename
-  const loose = entries.find(([path]) => path.toLowerCase().includes(lowerName));
-  return loose ? loose[1] : undefined;
-};
 
 // Bind exact images: moon, barn, valley, run
-const allAssets = Object.values(assetImages);
-const imgMoon = findImageByName("moon") || allAssets[0];
-const imgBarn = findImageByName("barn") || allAssets[1] || allAssets[0];
-const imgValley = findImageByName("valley") || allAssets[2] || allAssets[0];
-const imgRun = findImageByName("run") || allAssets[3] || allAssets[0];
 
-const buyListings: LandListing[] = [
-  {
-    id: "1",
-    location: "Nairobi, Karen",
-    area: "2.5 acres",
-    price: "45,000,000",
-    ownerDID: "did:hedera:testnet:z6Mk...",
-    verificationStatus: "verified",
-    inspectors: 3,
-    imageGradient: "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
-    lastUpdated: "2 hours ago",
-    imageUrl: imgMoon,
-  },
-  {
-    id: "2",
-    location: "Kiambu, Limuru",
-    area: "5.0 acres",
-    price: "78,500,000",
-    ownerDID: "did:hedera:testnet:z8Qr...",
-    verificationStatus: "in-progress",
-    inspectors: 2,
-    imageGradient: "from-violet-500/20 via-purple-500/20 to-fuchsia-500/20",
-    lastUpdated: "5 hours ago",
-    imageUrl: imgBarn,
-  },
-  {
-    id: "3",
-    location: "Machakos, Konza",
-    area: "10.0 acres",
-    price: "120,000,000",
-    ownerDID: "did:hedera:testnet:z3Hv...",
-    verificationStatus: "verified",
-    inspectors: 5,
-    imageGradient: "from-orange-500/20 via-amber-500/20 to-yellow-500/20",
-    lastUpdated: "1 day ago",
-    imageUrl: imgValley,
-  },
-  {
-    id: "4",
-    location: "Nakuru, Elementaita",
-    area: "7.5 acres",
-    price: "95,000,000",
-    ownerDID: "did:hedera:testnet:z9Km...",
-    verificationStatus: "pending",
-    inspectors: 0,
-    imageGradient: "from-blue-500/20 via-indigo-500/20 to-purple-500/20",
-    lastUpdated: "3 days ago",
-    imageUrl: imgRun,
-  },
-];
 
 // Import SellerDashboard component content
 const SellLandContent = () => {
@@ -561,31 +491,46 @@ export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
-  // Fetch listings from backend
+  // Fetch listings from Hedera backend (minted parcels)
   const fetchListings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/listings');
-      if (response.ok) {
-        const listings = await response.json();
-        const formattedListings = listings.map((listing: any) => ({
-          id: listing.id,
-          location: listing.location,
-          area: listing.size,
-          price: listing.price.toLocaleString(),
-          title: listing.title,
-          verificationStatus: listing.status === 'pending_verification' ? 'pending' : 
-                            listing.status === 'verified' ? 'verified' : 'unverified',
-          inspectors: 0,
+      const res = await api.getParcels('minted');
+      const items = Array.isArray(res?.items) ? res.items : [];
+      const formatted = await Promise.all(items.map(async (p: any) => {
+        let imageUrl: string | undefined;
+        if (p.metadataHash) {
+          try {
+            const r = await fetch(`https://gateway.pinata.cloud/ipfs/${p.metadataHash}`);
+            if (r.ok) {
+              const j = await r.json();
+              let first = Array.isArray(j?.images) && j.images.length > 0 ? j.images[0] : null;
+              if (!first && j?.documents && Array.isArray(j.documents.additional) && j.documents.additional.length > 0) {
+                // backward-compat: older metadata stored image hashes in documents.additional
+                first = j.documents.additional[0];
+              }
+              const cid = typeof first === 'string' ? first : (first?.cid || first?.ipfsHash || first?.hash);
+              imageUrl = cid ? `https://gateway.pinata.cloud/ipfs/${cid}` : (first?.url as string | undefined);
+            }
+          } catch {}
+        }
+        return {
+          id: String(p.landId),
+          location: p.location || 'Unknown',
+          area: p.size || '',
+          price: (p.price ?? '').toString(),
+          title: p.location || undefined,
+          verificationStatus: 'verified' as const,
+          inspectors: 2,
           imageGradient: 'from-blue-500/20 via-indigo-500/20 to-purple-500/20',
-          lastUpdated: new Date(listing.createdAt).toLocaleDateString(),
-          imageUrl: listing.images?.[0]?.path ? `http://localhost:5000${listing.images[0].path}` : undefined,
-          description: listing.description,
-          landType: listing.landType,
-          seller: listing.seller
-        }));
-        setBackendListings(formattedListings);
-      }
+          lastUpdated: new Date(p.submittedAt || Date.now()).toLocaleDateString(),
+          imageUrl,
+          description: undefined,
+          landType: undefined,
+          seller: undefined
+        } as LandListing;
+      }));
+      setBackendListings(formatted);
     } catch (error) {
       console.error('Failed to fetch listings:', error);
     } finally {
@@ -597,8 +542,8 @@ export default function Hero() {
     fetchListings();
   }, []);
 
-  // Combine dummy listings with backend listings
-  const allListings = [...buyListings, ...backendListings];
+  // Show ONLY Hedera-backed listings
+  const allListings = backendListings;
 
   return (
     <section ref={ref} className="relative py-20 px-4 bg-gradient-to-br from-background via-background to-primary/5">
