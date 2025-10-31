@@ -1,0 +1,86 @@
+[
+  {
+    "landId": 1761866122655,
+    "size": "2000acres",
+    "price": "20000",
+    "location": "Kiambu city",
+    "metadataHash": "QmZ1TqHtqbwmoMnerFMkkfSNcTTEG6F4eQSEWCsPGimXVQ",
+    "approvals": [
+      "Chief",
+      "Surveyor"
+    ],
+    "verified": true,
+    "status": "minted",
+    "submittedAt": "2025-10-30T23:15:22.655Z",
+    "verificationHistory": [
+      {
+        "role": "Chief",
+        "name": "Irene Dallas",
+        "date": "2025-10-31T01:22:21.824Z"
+      },
+      {
+        "role": "Surveyor",
+        "name": "Joe",
+        "date": "2025-10-31T02:30:07.817Z"
+      }
+    ],
+    "nftMinted": true,
+    "nftSerial": "1"
+  },
+  {
+    "landId": 1761872202934,
+    "size": "2000Acres",
+    "price": "50000",
+    "location": "Gatundu",
+    "metadataHash": "QmTbSkdwNKPbV9sdUoBYLjxehLhXP5w4g7S9J5rbpkrvwU",
+    "approvals": [
+      "Chief",
+      "Surveyor"
+    ],
+    "verified": true,
+    "status": "minted",
+    "submittedAt": "2025-10-31T00:56:42.934Z",
+    "verificationHistory": [
+      {
+        "role": "Chief",
+        "name": "Joseph",
+        "date": "2025-10-31T01:43:10.722Z"
+      },
+      {
+        "role": "Surveyor",
+        "name": "kim",
+        "date": "2025-10-31T02:31:04.874Z"
+      }
+    ],
+    "nftMinted": true,
+    "nftSerial": "2"
+  },
+  {
+    "landId": 1761882139921,
+    "size": "2000acres",
+    "price": "50000",
+    "location": "Muranga",
+    "metadataHash": "QmbXYrSMWYmnwRWi3Dg17hDRwFEUFsPZE4Yrt65JtLWQNU",
+    "approvals": [
+      "Chief",
+      "Surveyor"
+    ],
+    "verified": true,
+    "status": "minted",
+    "submittedAt": "2025-10-31T03:42:19.921Z",
+    "verificationHistory": [
+      {
+        "role": "Chief",
+        "name": "mariana",
+        "date": "2025-10-31T03:43:46.708Z"
+      },
+      {
+        "role": "Surveyor",
+        "name": "luke",
+        "date": "2025-10-31T03:44:23.327Z"
+      }
+    ],
+    "nftMinted": true,
+    "nftSerial": "4"
+  }
+]
