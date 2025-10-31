@@ -39,7 +39,6 @@ Land remains one of the most valuable yet problematic assets in emerging economi
 BIMA creates a secure, user-friendly digital marketplace where land transactions are governed by blockchain logic instead of bureaucratic intermediaries.
 
 ### 🔄 How BIMA Works
-
 ```mermaid
 graph TD
     A[Seller Lists Land] --> B[Upload to IPFS];
@@ -318,7 +317,7 @@ Tech Stack
 
 ## 🎥 Video Demo
 
-<p align="center">
+align="center">
   <a href="https://youtu.be/Bq_2gSNj7os"
     <img src="https://img.icons8.com/clouds/500/video-playlist.png" alt="Watch BIMA Demo Video" width="60%" />
   </a>
