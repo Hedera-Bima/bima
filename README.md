@@ -209,7 +209,7 @@ Tech Stack
 ## 🖥️ Platform Features & UI Showcase
 
 ### 🏠 Landing Page & User Onboarding
-<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/b6c71e13-f534-4675-bbec-b59c1defe2f0" />
+ src="https://github.com/user-attachments/assets/b6c71e13-f534-4675-bbec-b59c1defe2f0" />
 
 **Key Features:**
 - Interactive hero section with marketplace statistics
@@ -217,11 +217,11 @@ Tech Stack
 - Wallet connection integration
 - Trust indicators and partner logos
 
-<img width="945" alt="BIMA Landing Page" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/acde65af-e7c7-4d60-a855-42ae85d93147" />
-" />
+BIMA Landing Page src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/acde65af-e7c7-4d60-a855-42ae85d93147" />
+
 
 ### 👤 User Dashboard
-*<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/13b0ed5c-7558-443c-a8ec-3967abd77b7b" />
+ src="https://github.com/user-attachments/assets/13b0ed5c-7558-443c-a8ec-3967abd77b7b" />
 *
 **Features:**
 - Portfolio overview of owned land NFTs
@@ -232,8 +232,8 @@ Tech Stack
 
 
 ### 🏡 Land Listing & Marketplace
-*[<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/35c528b1-57a3-4c8c-afd3-fd783ce4e2f3" />
-" />
+ src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/35c528b1-57a3-4c8c-afd3-fd783ce4e2f3" />
+
 *
 **Features:**
 - Interactive map view of available properties
@@ -243,8 +243,8 @@ Tech Stack
 
 
 ### 📝 Land Listing Creation
-*<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/4d09e8dc-835d-4f90-ace7-77dbbf5d1b8b" />
-" />
+ src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/4d09e8dc-835d-4f90-ace7-77dbbf5d1b8b" />
+
 *
 **Features:**
 - Step-by-step listing wizard
