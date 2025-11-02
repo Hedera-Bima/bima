@@ -157,6 +157,7 @@ const Header: React.FC = () => {
 
           {/* Theme Toggle & Connect Wallet Button - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
+            <ThemeToggle />
             <Button
               type="button"
               aria-label="Connect Wallet"
