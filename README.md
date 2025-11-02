@@ -209,14 +209,15 @@ Tech Stack
 ## 🖥️ Platform Features & UI Showcase
 
 ### 🏠 Landing Page & User Onboarding
-*[Paste your landing page screenshot here]*
+<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/b6c71e13-f534-4675-bbec-b59c1defe2f0" />
+
 **Key Features:**
 - Interactive hero section with marketplace statistics
 - Role-based onboarding (Buyer/Seller/Inspector)
 - Wallet connection integration
 - Trust indicators and partner logos
 
-<img width="945" alt="BIMA Landing Page" src="![Uploading image.png…]()
+<img width="945" alt="BIMA Landing Page" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/acde65af-e7c7-4d60-a855-42ae85d93147" />
 " />
 
 ### 👤 User Dashboard
@@ -230,7 +231,8 @@ Tech Stack
 <img width="948" alt="User Dashboard" src="https://github.com/user-attachments/assets/dashboard-screenshot" />
 
 ### 🏡 Land Listing & Marketplace
-*[Paste marketplace screenshot here]*
+*[<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/7dc0d9b2-b09f-4d02-876c-5fb3e7a27901" />
+*
 **Features:**
 - Interactive map view of available properties
 - Advanced filtering (location, price, size)
@@ -240,7 +242,8 @@ Tech Stack
 <img width="950" alt="Marketplace View" src="https://github.com/user-attachments/assets/marketplace-screenshot" />
 
 ### 📝 Land Listing Creation
-*[Paste listing creation screenshot here]*
+*<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/e074cbb8-069c-40ad-9af5-b8e10479ebf8" />
+*
 **Features:**
 - Step-by-step listing wizard
 - Document upload to IPFS
@@ -250,7 +253,9 @@ Tech Stack
 <img width="959" alt="Create Listing" src="https://github.com/user-attachments/assets/listing-creation-screenshot" />
 
 ### 🔍 Inspector Verification Portal
-*[Paste inspector portal screenshot here]*
+*<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/f6787a58-9f33-4cf6-b377-8f53d65d3c09" />*
+*![Uploading image.png…]()*
+
 **Features:**
 - Pending verification queue
 - Property details and documents review
@@ -351,10 +356,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- [Website](https://bima-land.com)
-- [Documentation](https://docs.bima-land.com)
+- [Website](https://bima-heder.vercel.app/)
+- [Documentation]([https://docs.bima-land.com](https://hedera-bima.gitbook.io/hedera-bima-docs/))
 - [Hedera HashScan](https://hashscan.io/testnet/token/0.0.4892576)
-- [Community Forum](https://forum.bima-land.com)
+
 
 ---
 
@@ -362,7 +367,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ on Hedera Hashgraph**
 
-*Transforming African Land Ownership - One Blockchain Transaction at a Time*
+*Transforming African Land Ownership - One Hedera  Transaction at a Time*
 
 [![Hedera](https://img.shields.io/badge/Powered_by-Hedera-000000?style=for-the-badge&logo=hedera&logoColor=white)](https://hedera.com)
 
