@@ -142,7 +142,7 @@ export const Footer = () => {
             </div>
             
             <p className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-sm">
-              Revolutionizing land ownership with blockchain technology. 
+              Revolutionizing land ownership with Hedera technology. 
               Secure, transparent, and verified property transactions on Hedera.
             </p>
 
