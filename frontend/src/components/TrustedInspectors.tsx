@@ -149,7 +149,7 @@ export const TrustedInspectors = () => {
           >
             <Lock className="w-5 h-5 text-primary" />
             <span className="text-sm font-semibold text-primary tracking-wider uppercase">
-              Blockchain Verified
+              Hedera Verified
             </span>
             <motion.div
               className="w-2 h-2 rounded-full bg-primary"

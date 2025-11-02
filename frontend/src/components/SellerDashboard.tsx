@@ -535,7 +535,7 @@ export default function SellerDashboard() {
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               List your land, track verification progress, and manage sales
-              through blockchain-secured transactions
+              through Hedera-secured transactions
             </p>
           </motion.div>
 
