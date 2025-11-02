@@ -209,7 +209,7 @@ Tech Stack
 ## 🖥️ Platform Features & UI Showcase
 
 ### 🏠 Landing Page & User Onboarding
- src="https://github.com/user-attachments/assets/b6c71e13-f534-4675-bbec-b59c1defe2f0" />
+
 
 **Key Features:**
 - Interactive hero section with marketplace statistics
@@ -217,18 +217,7 @@ Tech Stack
 - Wallet connection integration
 - Trust indicators and partner logos
 
- src="<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/a1c0d032-562d-4ead-bba7-08f2a8a53142" />
-
-
-
-### 👤 User Dashboard
- ="https://github.com/user-attachments/assets/13b0ed5c-7558-443c-a8ec-3967abd77b7b" />
-*
-**Features:**
-- Portfolio overview of owned land NFTs
-- Transaction history and status tracking
-- Role-specific quick actions
-- Reputation score display for inspectors
+<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/a1c0d032-562d-4ead-bba7-08f2a8a53142" />
 
 
 
@@ -254,7 +243,7 @@ Tech Stack
 - Preview before submission
 
 ### 🔍 Inspector Verification Portal
-*<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/83ac79a7-4584-4265-9a1a-5fb6e7e719ce" />" />*
+<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/83ac79a7-4584-4265-9a1a-5fb6e7e719ce" />" 
 
 
 **Features:**
