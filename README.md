@@ -290,10 +290,10 @@ Tech Stack
 ### Cost Comparison: Traditional vs BIMA
 | Service | Traditional Cost | BIMA Cost | Savings |
 |---------|-----------------|-----------|---------|
-| Land Registration | $50-200 | $0.10 | 99.8% |
-| Title Transfer | $100-500 | $0.05 | 99.9% |
+| Land Registration | $50-200 | $\(0.001). | 99.8% |
+| Title Transfer | $100-500 | $0.001 | 99.9% |
 | Verification | $20-100 | $0.001 | 99.99% |
-| Escrow Services | 1-2% value | $0.0001 | 99.99% |
+| Escrow Services | 1-2% value | $0.001 | 99.99% |
 
 ### African Impact Metrics
 - **🛡️ Fraud Reduction**: 95% decrease in duplicate titles
