@@ -58,7 +58,7 @@ Tech Stack
 🧠 Languages & Frameworks
 
 
-🌐 Blockchain & Web3
+🌐 Hedera Hashgraph & Web3
 
 
 🧰 Development Tools
@@ -193,7 +193,7 @@ Tech Stack
 ### Running Environment
 - **Frontend**: React application running on `https://bima11-hedera.vercel.app/`
 - **Backend**: Node.js API running on `http://localhost:3001`
-- **Blockchain**: Hedera Testnet with real-time transaction processing
+- **Hedera**: Hedera Testnet with real-time transaction processing
 - **Storage**: IPFS via Web3.Storage for document persistence
 
 ## 🔗 Deployed Hedera Testnet IDs

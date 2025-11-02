@@ -20,7 +20,7 @@
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "keywords": ["land", "marketplace", "real-estate", "blockchain"],
+  "keywords": ["land", "marketplace", "real-estate", "Hedera Hashgraph"],
   "author": "Bima Team",
   "license": "MIT"
 }

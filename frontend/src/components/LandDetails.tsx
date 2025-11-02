@@ -623,7 +623,7 @@ const LandDetails: React.FC = () => {
                         <div>
                           <h3 className="text-lg font-semibold mb-3">Legal Documents</h3>
                           <p className="text-muted-foreground text-sm mb-4">
-                            All documents are blockchain-verified and legally compliant
+                            All documents are Hedera-verified and legally compliant
                           </p>
                         </div>
 
