@@ -334,7 +334,7 @@ export const Footer = () => {
                 ease: "easeInOut",
               }}
             />
-            <span className="text-xs text-primary font-medium">Blockchain Secured</span>
+            <span className="text-xs text-primary font-medium">Hedera Hashgraph Secured</span>
           </motion.div>
         </motion.div>
       </div>
