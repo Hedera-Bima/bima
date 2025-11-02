@@ -138,7 +138,7 @@ export default function HowItWorks() {
               transition={{ delay: 0.2 }}
               className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8"
             >
-              Three simple steps to revolutionize land ownership with blockchain technology, 
+              Three simple steps to revolutionize land ownership with Hedera Hashgraph technology, 
               community verification, and tokenized titles on Hedera Hashgraph
             </motion.p>
 

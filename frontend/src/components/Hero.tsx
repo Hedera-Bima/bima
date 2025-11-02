@@ -754,7 +754,7 @@ export default function Hero() {
           >
             {activeTab === "buy"
               ? "Browse verified properties with transparent ownership records secured on Hedera blockchain"
-              : "Transform your property into a digital asset with blockchain-verified ownership and reach global buyers through our secure marketplace"}
+              : "Transform your property into a digital asset with Hedera-verified ownership and reach global buyers through our secure marketplace"}
           </motion.p>
 
           {/* Buy/Sell Toggle Buttons */}
