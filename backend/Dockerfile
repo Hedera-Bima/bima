@@ -16,8 +16,8 @@ RUN npm ci --only=production
 # Copy application files
 COPY . .
 
-# Create directories for data and uploads
-RUN mkdir -p /app/data /app/uploads/images /app/uploads/documents
+# Create unified storage directory
+RUN mkdir -p /app/storage/data /app/storage/uploads/images /app/storage/uploads/documents
 
 # Expose port
 EXPOSE 5000
