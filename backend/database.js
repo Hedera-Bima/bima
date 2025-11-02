@@ -1,17 +1,21 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs-extra');
+const Database = require("better-sqlite3");
+const path = require("path");
+const fs = require("fs-extra");
 
-// Ensure data directory exists
-const dataDir = path.join(__dirname, 'data');
+// Ensure storage directory exists
+const storageDir = path.join(__dirname, "storage");
+fs.ensureDirSync(storageDir);
+
+// Ensure data subdirectory exists
+const dataDir = path.join(storageDir, "data");
 fs.ensureDirSync(dataDir);
 
 // Initialize SQLite database
-const dbPath = path.join(dataDir, 'bima.db');
+const dbPath = path.join(dataDir, "bima.db");
 const db = new Database(dbPath);
 
 // Enable foreign keys
-db.pragma('foreign_keys = ON');
+db.pragma("foreign_keys = ON");
 
 // Create tables
 const initDatabase = () => {
@@ -94,7 +98,7 @@ const initDatabase = () => {
     )
   `);
 
-  console.log('✅ Database tables initialized');
+  console.log("✅ Database tables initialized");
 };
 
 // Initialize database on startup
@@ -104,71 +108,100 @@ initDatabase();
 const dbHelpers = {
   // Get all listings with related data
   getAllListings: () => {
-    const listings = db.prepare('SELECT * FROM listings ORDER BY createdAt DESC').all();
-    
-    return listings.map(listing => {
-      const images = db.prepare('SELECT * FROM images WHERE listingId = ?').all(listing.id);
-      const documents = db.prepare('SELECT * FROM documents WHERE listingId = ?').all(listing.id);
-      const utilities = db.prepare('SELECT utility FROM utilities WHERE listingId = ?').all(listing.id);
-      const amenities = db.prepare('SELECT amenity FROM amenities WHERE listingId = ?').all(listing.id);
-      const verificationStatus = db.prepare('SELECT * FROM verification_status WHERE listingId = ?').get(listing.id);
+    const listings = db
+      .prepare("SELECT * FROM listings ORDER BY createdAt DESC")
+      .all();
+
+    return listings.map((listing) => {
+      const images = db
+        .prepare("SELECT * FROM images WHERE listingId = ?")
+        .all(listing.id);
+      const documents = db
+        .prepare("SELECT * FROM documents WHERE listingId = ?")
+        .all(listing.id);
+      const utilities = db
+        .prepare("SELECT utility FROM utilities WHERE listingId = ?")
+        .all(listing.id);
+      const amenities = db
+        .prepare("SELECT amenity FROM amenities WHERE listingId = ?")
+        .all(listing.id);
+      const verificationStatus = db
+        .prepare("SELECT * FROM verification_status WHERE listingId = ?")
+        .get(listing.id);
 
       return {
         ...listing,
         images,
         documents: {
-          titleDeed: documents.find(d => d.type === 'titleDeed') || null,
-          surveyReport: documents.find(d => d.type === 'surveyReport') || null,
-          taxCertificate: documents.find(d => d.type === 'taxCertificate') || null
+          titleDeed: documents.find((d) => d.type === "titleDeed") || null,
+          surveyReport:
+            documents.find((d) => d.type === "surveyReport") || null,
+          taxCertificate:
+            documents.find((d) => d.type === "taxCertificate") || null,
         },
-        utilities: utilities.map(u => u.utility),
-        nearbyAmenities: amenities.map(a => a.amenity),
+        utilities: utilities.map((u) => u.utility),
+        nearbyAmenities: amenities.map((a) => a.amenity),
         seller: {
           name: listing.sellerName,
           phone: listing.sellerPhone,
-          email: listing.sellerEmail
+          email: listing.sellerEmail,
         },
-        verificationStatus: verificationStatus ? {
-          documents: verificationStatus.documents,
-          site: verificationStatus.site,
-          legal: verificationStatus.legal
-        } : { documents: 'pending', site: 'pending', legal: 'pending' }
+        verificationStatus: verificationStatus
+          ? {
+              documents: verificationStatus.documents,
+              site: verificationStatus.site,
+              legal: verificationStatus.legal,
+            }
+          : { documents: "pending", site: "pending", legal: "pending" },
       };
     });
   },
 
   // Get single listing by ID
   getListingById: (id) => {
-    const listing = db.prepare('SELECT * FROM listings WHERE id = ?').get(id);
-    
+    const listing = db.prepare("SELECT * FROM listings WHERE id = ?").get(id);
+
     if (!listing) return null;
 
-    const images = db.prepare('SELECT * FROM images WHERE listingId = ?').all(id);
-    const documents = db.prepare('SELECT * FROM documents WHERE listingId = ?').all(id);
-    const utilities = db.prepare('SELECT utility FROM utilities WHERE listingId = ?').all(id);
-    const amenities = db.prepare('SELECT amenity FROM amenities WHERE listingId = ?').all(id);
-    const verificationStatus = db.prepare('SELECT * FROM verification_status WHERE listingId = ?').get(id);
+    const images = db
+      .prepare("SELECT * FROM images WHERE listingId = ?")
+      .all(id);
+    const documents = db
+      .prepare("SELECT * FROM documents WHERE listingId = ?")
+      .all(id);
+    const utilities = db
+      .prepare("SELECT utility FROM utilities WHERE listingId = ?")
+      .all(id);
+    const amenities = db
+      .prepare("SELECT amenity FROM amenities WHERE listingId = ?")
+      .all(id);
+    const verificationStatus = db
+      .prepare("SELECT * FROM verification_status WHERE listingId = ?")
+      .get(id);
 
     return {
       ...listing,
       images,
       documents: {
-        titleDeed: documents.find(d => d.type === 'titleDeed') || null,
-        surveyReport: documents.find(d => d.type === 'surveyReport') || null,
-        taxCertificate: documents.find(d => d.type === 'taxCertificate') || null
+        titleDeed: documents.find((d) => d.type === "titleDeed") || null,
+        surveyReport: documents.find((d) => d.type === "surveyReport") || null,
+        taxCertificate:
+          documents.find((d) => d.type === "taxCertificate") || null,
       },
-      utilities: utilities.map(u => u.utility),
-      nearbyAmenities: amenities.map(a => a.amenity),
+      utilities: utilities.map((u) => u.utility),
+      nearbyAmenities: amenities.map((a) => a.amenity),
       seller: {
         name: listing.sellerName,
         phone: listing.sellerPhone,
-        email: listing.sellerEmail
+        email: listing.sellerEmail,
       },
-      verificationStatus: verificationStatus ? {
-        documents: verificationStatus.documents,
-        site: verificationStatus.site,
-        legal: verificationStatus.legal
-      } : { documents: 'pending', site: 'pending', legal: 'pending' }
+      verificationStatus: verificationStatus
+        ? {
+            documents: verificationStatus.documents,
+            site: verificationStatus.site,
+            legal: verificationStatus.legal,
+          }
+        : { documents: "pending", site: "pending", legal: "pending" },
     };
   },
 
@@ -200,45 +233,69 @@ const dbHelpers = {
         listingData.seller.phone,
         listingData.seller.email,
         listingData.createdAt,
-        listingData.updatedAt
+        listingData.updatedAt,
       );
 
       // Insert images
       if (listingData.images && listingData.images.length > 0) {
-        const insertImage = db.prepare('INSERT INTO images (listingId, filename, originalName, path) VALUES (?, ?, ?, ?)');
-        listingData.images.forEach(image => {
-          insertImage.run(listingData.id, image.filename, image.originalName, image.path);
+        const insertImage = db.prepare(
+          "INSERT INTO images (listingId, filename, originalName, path) VALUES (?, ?, ?, ?)",
+        );
+        listingData.images.forEach((image) => {
+          insertImage.run(
+            listingData.id,
+            image.filename,
+            image.originalName,
+            image.path,
+          );
         });
       }
 
       // Insert documents
       if (listingData.documents) {
-        const insertDoc = db.prepare('INSERT INTO documents (listingId, type, filename, originalName, path) VALUES (?, ?, ?, ?, ?)');
+        const insertDoc = db.prepare(
+          "INSERT INTO documents (listingId, type, filename, originalName, path) VALUES (?, ?, ?, ?, ?)",
+        );
         Object.entries(listingData.documents).forEach(([type, doc]) => {
           if (doc) {
-            insertDoc.run(listingData.id, type, doc.filename, doc.originalName, doc.path);
+            insertDoc.run(
+              listingData.id,
+              type,
+              doc.filename,
+              doc.originalName,
+              doc.path,
+            );
           }
         });
       }
 
       // Insert utilities
       if (listingData.utilities && listingData.utilities.length > 0) {
-        const insertUtility = db.prepare('INSERT INTO utilities (listingId, utility) VALUES (?, ?)');
-        listingData.utilities.forEach(utility => {
+        const insertUtility = db.prepare(
+          "INSERT INTO utilities (listingId, utility) VALUES (?, ?)",
+        );
+        listingData.utilities.forEach((utility) => {
           insertUtility.run(listingData.id, utility);
         });
       }
 
       // Insert amenities
-      if (listingData.nearbyAmenities && listingData.nearbyAmenities.length > 0) {
-        const insertAmenity = db.prepare('INSERT INTO amenities (listingId, amenity) VALUES (?, ?)');
-        listingData.nearbyAmenities.forEach(amenity => {
+      if (
+        listingData.nearbyAmenities &&
+        listingData.nearbyAmenities.length > 0
+      ) {
+        const insertAmenity = db.prepare(
+          "INSERT INTO amenities (listingId, amenity) VALUES (?, ?)",
+        );
+        listingData.nearbyAmenities.forEach((amenity) => {
           insertAmenity.run(listingData.id, amenity);
         });
       }
 
       // Insert verification status
-      db.prepare('INSERT INTO verification_status (listingId) VALUES (?)').run(listingData.id);
+      db.prepare("INSERT INTO verification_status (listingId) VALUES (?)").run(
+        listingData.id,
+      );
     });
 
     transaction();
@@ -249,31 +306,33 @@ const dbHelpers = {
   updateListingStatus: (id, statusData) => {
     const transaction = db.transaction(() => {
       if (statusData.status) {
-        db.prepare('UPDATE listings SET status = ?, updatedAt = ? WHERE id = ?')
-          .run(statusData.status, new Date().toISOString(), id);
+        db.prepare(
+          "UPDATE listings SET status = ?, updatedAt = ? WHERE id = ?",
+        ).run(statusData.status, new Date().toISOString(), id);
       }
 
       if (statusData.verificationStatus) {
         const updates = [];
         const values = [];
-        
+
         if (statusData.verificationStatus.documents) {
-          updates.push('documents = ?');
+          updates.push("documents = ?");
           values.push(statusData.verificationStatus.documents);
         }
         if (statusData.verificationStatus.site) {
-          updates.push('site = ?');
+          updates.push("site = ?");
           values.push(statusData.verificationStatus.site);
         }
         if (statusData.verificationStatus.legal) {
-          updates.push('legal = ?');
+          updates.push("legal = ?");
           values.push(statusData.verificationStatus.legal);
         }
 
         if (updates.length > 0) {
           values.push(id);
-          db.prepare(`UPDATE verification_status SET ${updates.join(', ')} WHERE listingId = ?`)
-            .run(...values);
+          db.prepare(
+            `UPDATE verification_status SET ${updates.join(", ")} WHERE listingId = ?`,
+          ).run(...values);
         }
       }
     });
@@ -287,9 +346,9 @@ const dbHelpers = {
     const listing = dbHelpers.getListingById(id);
     if (!listing) return null;
 
-    db.prepare('DELETE FROM listings WHERE id = ?').run(id);
+    db.prepare("DELETE FROM listings WHERE id = ?").run(id);
     return listing;
-  }
+  },
 };
 
 module.exports = { db, dbHelpers };
