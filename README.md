@@ -217,11 +217,12 @@ Tech Stack
 - Wallet connection integration
 - Trust indicators and partner logos
 
-BIMA Landing Page src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/acde65af-e7c7-4d60-a855-42ae85d93147" />
+ src="<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/a1c0d032-562d-4ead-bba7-08f2a8a53142" />
+
 
 
 ### 👤 User Dashboard
- src="https://github.com/user-attachments/assets/13b0ed5c-7558-443c-a8ec-3967abd77b7b" />
+ ="https://github.com/user-attachments/assets/13b0ed5c-7558-443c-a8ec-3967abd77b7b" />
 *
 **Features:**
 - Portfolio overview of owned land NFTs
@@ -232,7 +233,7 @@ BIMA Landing Page src="<img width="1832" height="954" alt="image" src="https://g
 
 
 ### 🏡 Land Listing & Marketplace
- src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/35c528b1-57a3-4c8c-afd3-fd783ce4e2f3" />
+ <img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/35c528b1-57a3-4c8c-afd3-fd783ce4e2f3" />
 
 *
 **Features:**
@@ -243,7 +244,7 @@ BIMA Landing Page src="<img width="1832" height="954" alt="image" src="https://g
 
 
 ### 📝 Land Listing Creation
- src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/4d09e8dc-835d-4f90-ace7-77dbbf5d1b8b" />
+ <img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/4d09e8dc-835d-4f90-ace7-77dbbf5d1b8b" />
 
 *
 **Features:**
