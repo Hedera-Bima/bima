@@ -151,7 +151,7 @@ Tech Stack
 
 1. **Clone and Setup**
    ```bash
-   git clone https://github.com/your-username/bima.git
+   git clone https://github.com/Hedera-Bima/bima.git
    cd bima
    cp .env.example .env
    ```
@@ -173,26 +173,24 @@ Tech Stack
    cd ..
    ```
 
-4. **Deploy Smart Contracts**
+4. **Backend live Smart-Contracts**
    ```bash
-   npx hardhat compile
-   npx hardhat run scripts/deploy.js --network hedera-testnet
+   https://bima-backend.fly.dev
+
+   https://bima-hedera-service.fly.dev
    ```
 
 5. **Run Application**
-   ```bash
-   # Terminal 1 - Backend API (Port 3001)
-   cd server
-   npm run dev
+
    
-   # Terminal 2 - Frontend (Port 3000)
+   # Terminal 2 - Frontend (Port 5173)
    cd client
    npm run dev
    ```
 
 ### Running Environment
 - **Frontend**: React application running on `https://bima11-hedera.vercel.app/`
-- **Backend**: Node.js API running on `http://localhost:3001`
+- **Backend**: Node.js API running on `https://bima-backend.fly.dev`
 - **Hedera**: Hedera Testnet with real-time transaction processing
 - **Storage**: IPFS via Web3.Storage for document persistence
 
