@@ -149,7 +149,7 @@ export const TrustedInspectors = () => {
           >
             <Lock className="w-5 h-5 text-primary" />
             <span className="text-sm font-semibold text-primary tracking-wider uppercase">
-              Blockchain Verified
+              Hedera Verified
             </span>
             <motion.div
               className="w-2 h-2 rounded-full bg-primary"
@@ -239,7 +239,7 @@ export const TrustedInspectors = () => {
                   className="relative inline-block font-bold text-foreground"
                   whileHover={{ scale: 1.05 }}
                 >
-                  <span className="relative z-10">Blockchain</span>
+                  <span className="relative z-10">Hedera</span>
                   <motion.span
                     className="absolute inset-0 bg-gradient-to-r from-primary/40 to-primary/20 blur-lg"
                     animate={{

@@ -1,4 +1,4 @@
-# 🏡 BIMA - Decentralized Land Marketplace
+#  BIMA - Decentralized Land Marketplace
 
 > **Hedera Track: Transforming Land Ownership in Africa through Blockchain**
 
@@ -57,7 +57,7 @@ Tech Stack
 🧠 Languages & Frameworks
 
 
-🌐 Blockchain & Web3
+🌐 Hedera Hashgraph & Web3
 
 
 🧰 Development Tools
@@ -150,7 +150,7 @@ Tech Stack
 
 1. **Clone and Setup**
    ```bash
-   git clone https://github.com/your-username/bima.git
+   git clone https://github.com/Hedera-Bima/bima.git
    cd bima
    cp .env.example .env
    ```
@@ -172,27 +172,25 @@ Tech Stack
    cd ..
    ```
 
-4. **Deploy Smart Contracts**
+4. **Backend live Smart-Contracts**
    ```bash
-   npx hardhat compile
-   npx hardhat run scripts/deploy.js --network hedera-testnet
+   https://bima-backend.fly.dev
+
+   https://bima-hedera-service.fly.dev
    ```
 
 5. **Run Application**
-   ```bash
-   # Terminal 1 - Backend API (Port 3001)
-   cd server
-   npm run dev
+
    
-   # Terminal 2 - Frontend (Port 3000)
+   # Terminal 2 - Frontend (Port 5173)
    cd client
    npm run dev
    ```
 
 ### Running Environment
 - **Frontend**: React application running on `https://bima11-hedera.vercel.app/`
-- **Backend**: Node.js API running on `http://localhost:3001`
-- **Blockchain**: Hedera Testnet with real-time transaction processing
+- **Backend**: Node.js API running on `https://bima-backend.fly.dev`
+- **Hedera**: Hedera Testnet with real-time transaction processing
 - **Storage**: IPFS via Web3.Storage for document persistence
 
 ## 🔗 Deployed Hedera Testnet IDs
@@ -208,55 +206,49 @@ Tech Stack
 ## 🖥️ Platform Features & UI Showcase
 
 ### 🏠 Landing Page & User Onboarding
-*[Paste your landing page screenshot here]*
+
+
 **Key Features:**
 - Interactive hero section with marketplace statistics
 - Role-based onboarding (Buyer/Seller/Inspector)
 - Wallet connection integration
 - Trust indicators and partner logos
 
-<img width="945" alt="BIMA Landing Page" src="![Uploading image.png…]()
-" />
+<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/a1c0d032-562d-4ead-bba7-08f2a8a53142" />
 
-### 👤 User Dashboard
-*[Paste dashboard screenshot here]*
-**Features:**
-- Portfolio overview of owned land NFTs
-- Transaction history and status tracking
-- Role-specific quick actions
-- Reputation score display for inspectors
 
-<img width="948" alt="User Dashboard" src="https://github.com/user-attachments/assets/dashboard-screenshot" />
 
 ### 🏡 Land Listing & Marketplace
-*[Paste marketplace screenshot here]*
+ <img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/35c528b1-57a3-4c8c-afd3-fd783ce4e2f3" />
+
+*
 **Features:**
 - Interactive map view of available properties
 - Advanced filtering (location, price, size)
 - Property cards with verification status
 - Quick purchase and inquiry actions
 
-<img width="950" alt="Marketplace View" src="https://github.com/user-attachments/assets/marketplace-screenshot" />
 
 ### 📝 Land Listing Creation
-*[Paste listing creation screenshot here]*
+ <img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/4d09e8dc-835d-4f90-ace7-77dbbf5d1b8b" />
+
+*
 **Features:**
 - Step-by-step listing wizard
 - Document upload to IPFS
 - Location mapping integration
 - Preview before submission
 
-<img width="959" alt="Create Listing" src="https://github.com/user-attachments/assets/listing-creation-screenshot" />
-
 ### 🔍 Inspector Verification Portal
-*[Paste inspector portal screenshot here]*
+<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/83ac79a7-4584-4265-9a1a-5fb6e7e719ce" />" 
+
+
 **Features:**
 - Pending verification queue
 - Property details and documents review
 - Multi-signature approval interface
 - Reputation and performance metrics
 
-<img width="947" alt="Inspector Portal" src="https://github.com/user-attachments/assets/inspector-portal-screenshot" />
 
 ## ✨ Key Features
 
@@ -295,10 +287,10 @@ Tech Stack
 ### Cost Comparison: Traditional vs BIMA
 | Service | Traditional Cost | BIMA Cost | Savings |
 |---------|-----------------|-----------|---------|
-| Land Registration | $50-200 | $0.10 | 99.8% |
-| Title Transfer | $100-500 | $0.05 | 99.9% |
+| Land Registration | $50-200 | $\(0.001). | 99.8% |
+| Title Transfer | $100-500 | $0.001 | 99.9% |
 | Verification | $20-100 | $0.001 | 99.99% |
-| Escrow Services | 1-2% value | $0.0001 | 99.99% |
+| Escrow Services | 1-2% value | $0.001 | 99.99% |
 
 ### African Impact Metrics
 - **🛡️ Fraud Reduction**: 95% decrease in duplicate titles
@@ -317,8 +309,13 @@ Tech Stack
 
 ## 🎥 Video Demo
 
+<<<<<<< HEAD
 align="center">
   <a href="https://youtu.be/Bq_2gSNj7os"
+=======
+<p align="center">
+  <a href="https://youtu.be/Bq_2gSNj7os" target="_blank">
+>>>>>>> be4dd6d20de4d16fda990aaef3b3274b464f8bd9
     <img src="https://img.icons8.com/clouds/500/video-playlist.png" alt="Watch BIMA Demo Video" width="60%" />
   </a>
 </p>
@@ -348,4 +345,27 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+<<<<<<< HEAD
+=======
+## 🔗 Links
+
+- [Website](https://bima-heder.vercel.app/)
+- [Documentation]([https://docs.bima-land.com](https://hedera-bima.gitbook.io/hedera-bima-docs/))
+- [Hedera HashScan](https://hashscan.io/testnet/token/0.0.4892576)
+
+
+---
+
+<div align="center">
+
+**Built with ❤️ on Hedera Hashgraph**
+
+*Transforming African Land Ownership - One Hedera  Transaction at a Time*
+
+[![Hedera](https://img.shields.io/badge/Powered_by-Hedera-000000?style=for-the-badge&logo=hedera&logoColor=white)](https://hedera.com)
+
+</div>
+
+---
+>>>>>>> be4dd6d20de4d16fda990aaef3b3274b464f8bd9
 

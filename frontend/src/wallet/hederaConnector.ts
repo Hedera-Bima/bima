@@ -71,10 +71,10 @@ export async function disconnect() {
   }
 }
 
-export function onSessionEvent(event: HederaSessionEvent, handler: (...args: any[]) => void) {
-  if (!dAppConnector) return;
+export async function onSessionEvent(event: HederaSessionEvent, handler: (...args: any[]) => void) {
   try {
-    dAppConnector.on?.(event, handler);
+    const connector = await initConnector();
+    connector.on?.(event, handler);
   } catch (e) {
     console.error('onSessionEvent error', e);
   }

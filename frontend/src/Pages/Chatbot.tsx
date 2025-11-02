@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, Sparkles, Zap, Shield, TrendingUp, Code } from 'lucide-react';
+import bot from '../assets/bot.png';
+import bot1 from '../assets/bot1.png';
+import bot3 from '../assets/bot3.png';
 
 const StunningChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { 
-      text: "Welcome to the future of AI assistance! 🚀 How can I help you today?", 
+    {
+      text: "Welcome to the future of AI assistance! 🚀 How can I help you today?",
       sender: 'bot',
-      timestamp: new Date()
-    }
+      timestamp: new Date(),
+    },
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -239,7 +242,7 @@ const StunningChatbot = () => {
                   <div className="w-12 h-12 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 p-0.5 animate-glow">
                     <div className="w-full h-full bg-black rounded-2xl overflow-hidden">
                       <img 
-                        src="/src/assets/bot.png" 
+                        src={bot} 
                         alt="BIMA Assistant"
                         className="w-full h-full object-cover opacity-80"
                       />
@@ -301,7 +304,7 @@ const StunningChatbot = () => {
                   {message.sender === 'user' ? (
                     <div className="w-full h-full bg-white rounded-2xl overflow-hidden">
                       <img 
-                        src="/src/assets/bot3.png" 
+                        src={bot3} 
                         alt="User"
                         className="w-full h-full object-cover"
                       />
@@ -309,7 +312,7 @@ const StunningChatbot = () => {
                   ) : (
                     <div className="w-full h-full bg-black rounded-2xl overflow-hidden flex items-center justify-center">
                       <img 
-                        src="/src/assets/bot1.png" 
+                        src={bot1} 
                         alt="Bot"
                         className="w-full h-full object-cover opacity-70"
                       />
@@ -341,7 +344,7 @@ const StunningChatbot = () => {
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-purple-600 via-pink-600 to-purple-600 shadow-lg p-0.5">
                   <div className="w-full h-full bg-black rounded-2xl overflow-hidden flex items-center justify-center">
                     <img 
-                      src="/src/assets/bot.png" 
+                      src={bot} 
                       alt="Bot"
                       className="w-full h-full object-cover opacity-70"
                     />

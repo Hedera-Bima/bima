@@ -20,7 +20,7 @@ const steps = [
   {
     number: "02", 
     title: "Multi-Signature Verification",
-    description: "Trusted inspectors conduct on-ground verification and sign off using blockchain consensus",
+    description: "Trusted inspectors conduct on-ground verification and sign off using Hedera consensus",
     icon: Shield,
     color: "from-blue-500 to-indigo-600",
     details: [
@@ -138,7 +138,7 @@ export default function HowItWorks() {
               transition={{ delay: 0.2 }}
               className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8"
             >
-              Three simple steps to revolutionize land ownership with blockchain technology, 
+              Three simple steps to revolutionize land ownership with Hedera Hashgraph technology, 
               community verification, and tokenized titles on Hedera Hashgraph
             </motion.p>
 
@@ -327,7 +327,7 @@ export default function HowItWorks() {
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Key Innovation Features</span>
             </h2>
             <p className="text-lg text-muted-foreground text-center max-w-3xl mx-auto mb-16">
-              BIMA leverages cutting-edge blockchain technology to create a transparent, secure, and efficient land ownership ecosystem
+              BIMA leverages Hedera Hashgraph technology to create a transparent, secure, and efficient land ownership ecosystem
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

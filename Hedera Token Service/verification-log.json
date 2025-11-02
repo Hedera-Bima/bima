@@ -82,5 +82,27 @@
     ],
     "nftMinted": true,
     "nftSerial": "4"
+  },
+  {
+    "landId": 1762056415084,
+    "size": "6.5",
+    "price": "800000",
+    "location": "Nairobi",
+    "metadataHash": "QmdRLhkDPWcc91yo6X3HSgdCP85ojcKYjd5dNgmWPMx83s",
+    "approvals": [],
+    "verified": false,
+    "status": "pending",
+    "submittedAt": "2025-11-02T04:06:55.084Z"
+  },
+  {
+    "landId": 1762056905703,
+    "size": "2",
+    "price": "600000",
+    "location": "Thika",
+    "metadataHash": "QmQh6WK5kbVLcF5yFa7HDcuXoFxorgtzTr16nkUYYXmVrC",
+    "approvals": [],
+    "verified": false,
+    "status": "pending",
+    "submittedAt": "2025-11-02T04:15:05.703Z"
   }
 ]
