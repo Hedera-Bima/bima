@@ -268,7 +268,7 @@ const Index = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
               >
-                Secure land transactions with blockchain-verified ownership
+                Secure land transactions with Hedera-verified ownership
               </motion.p>
 
               {/* CTA Buttons */}
