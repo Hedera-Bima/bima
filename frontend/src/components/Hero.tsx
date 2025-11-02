@@ -1,16 +1,16 @@
 import { motion, useInView } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { api } from '../lib/api';
-import { 
-  MapPin, 
-  Shield, 
-  CheckCircle2, 
-  Clock, 
-  Sparkles, 
+import { api } from "../lib/api";
+import {
+  MapPin,
+  Shield,
+  CheckCircle2,
+  Clock,
+  Sparkles,
   ExternalLink,
   Upload,
-  Plus
+  Plus,
 } from "lucide-react";
 
 interface LandListing {
@@ -28,7 +28,7 @@ interface LandListing {
   size?: string;
   description?: string;
   landType?: string;
-  images?: Array<{path: string}>;
+  images?: Array<{ path: string }>;
   status?: string;
   seller?: {
     name: string;
@@ -39,101 +39,129 @@ interface LandListing {
 
 // Resolve available images from src/assets at build time (Vite)
 
-
 // Bind exact images: moon, barn, valley, run
 
-
 // Import SellerDashboard component content
-const SellLandContent = () => {
+const SellLandContent = ({
+  fetchListings,
+  setActiveTab,
+}: {
+  fetchListings: () => Promise<void>;
+  setActiveTab: (tab: "buy" | "sell") => void;
+}) => {
   const [formData, setFormData] = useState({
-    title: '',
-    location: '',
-    size: '',
-    price: '',
-    description: '',
-    landType: '',
-    zoning: '',
-    utilities: '',
-    accessibility: '',
-    nearbyAmenities: '',
-    sellerName: '',
-    sellerPhone: '',
-    sellerEmail: ''
+    title: "",
+    location: "",
+    size: "",
+    price: "",
+    description: "",
+    landType: "",
+    zoning: "",
+    utilities: "",
+    accessibility: "",
+    nearbyAmenities: "",
+    sellerName: "",
+    sellerPhone: "",
+    sellerEmail: "",
   });
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [uploadedDocs, setUploadedDocs] = useState({
     titleDeed: null as File | null,
     surveyReport: null as File | null,
-    taxCertificate: null as File | null
+    taxCertificate: null as File | null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImageUpload = (files: FileList | null) => {
     if (files) {
       const newImages = Array.from(files).slice(0, 4 - uploadedImages.length);
-      setUploadedImages(prev => [...prev, ...newImages]);
+      setUploadedImages((prev) => [...prev, ...newImages]);
     }
   };
 
   const handleDocumentUpload = (docType: string, file: File) => {
-    setUploadedDocs(prev => ({ ...prev, [docType]: file }));
+    setUploadedDocs((prev) => ({ ...prev, [docType]: file }));
   };
 
   const removeImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeDocument = (docType: string) => {
-    setUploadedDocs(prev => ({ ...prev, [docType]: null }));
+    setUploadedDocs((prev) => ({ ...prev, [docType]: null }));
   };
 
   const handleSubmit = async (isDraft: boolean = false) => {
     setIsSubmitting(true);
     try {
       const submitFormData = new FormData();
-      
+
       // Add form fields
       Object.entries(formData).forEach(([key, value]) => {
         submitFormData.append(key, value);
       });
-      
+
       // Add images
-      uploadedImages.forEach(image => {
-        submitFormData.append('images', image);
+      uploadedImages.forEach((image) => {
+        submitFormData.append("images", image);
       });
-      
+
       // Add documents
       Object.entries(uploadedDocs).forEach(([key, file]) => {
         if (file) {
           submitFormData.append(key, file);
         }
       });
-      
-      const response = await fetch('http://localhost:5000/api/listings', {
-        method: 'POST',
-        body: submitFormData
+
+      const response = await fetch("http://localhost:5000/api/listings", {
+        method: "POST",
+        body: submitFormData,
       });
-      
+
       if (response.ok) {
         await response.json();
-        alert(isDraft ? 'Listing created successfully!' : 'Listing submitted for verification!');
+        alert(
+          isDraft
+            ? "Listing created successfully!"
+            : "Listing submitted for verification!",
+        );
         // Reset form
         setFormData({
-          title: '', location: '', size: '', price: '', description: '',
-          landType: '', zoning: '', utilities: '', accessibility: '',
-          nearbyAmenities: '', sellerName: '', sellerPhone: '', sellerEmail: ''
+          title: "",
+          location: "",
+          size: "",
+          price: "",
+          description: "",
+          landType: "",
+          zoning: "",
+          utilities: "",
+          accessibility: "",
+          nearbyAmenities: "",
+          sellerName: "",
+          sellerPhone: "",
+          sellerEmail: "",
         });
         setUploadedImages([]);
-        setUploadedDocs({ titleDeed: null, surveyReport: null, taxCertificate: null });
+        setUploadedDocs({
+          titleDeed: null,
+          surveyReport: null,
+          taxCertificate: null,
+        });
+
+        // Refresh listings to show the new one immediately
+        await fetchListings();
+
+        // Switch to buy tab to show the new listing
+        setActiveTab("buy");
       } else {
-        throw new Error('Failed to submit listing');
+        throw new Error("Failed to submit listing");
       }
     } catch (error) {
-      alert('Error submitting listing. Please try again.');
+      alert("Error submitting listing. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -155,45 +183,63 @@ const SellLandContent = () => {
             <div className="space-y-6">
               {/* Basic Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Basic Information
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Property Title</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-sm font-medium mb-2">
+                      Property Title
+                    </label>
+                    <input
+                      type="text"
                       placeholder="Enter property title"
                       value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("title", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Location</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-sm font-medium mb-2">
+                      Location
+                    </label>
+                    <input
+                      type="text"
                       placeholder="City, Area/Estate"
                       value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("location", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Area Size</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-sm font-medium mb-2">
+                      Area Size
+                    </label>
+                    <input
+                      type="text"
                       placeholder="e.g., 2.5 acres"
                       value={formData.size}
-                      onChange={(e) => handleInputChange('size', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("size", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Price (KES)</label>
-                    <input 
-                      type="number" 
+                    <label className="block text-sm font-medium mb-2">
+                      Price (KES)
+                    </label>
+                    <input
+                      type="number"
                       placeholder="e.g., 45000000"
                       value={formData.price}
-                      onChange={(e) => handleInputChange('price', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("price", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
@@ -205,10 +251,14 @@ const SellLandContent = () => {
                 <h3 className="text-lg font-semibold mb-4">Property Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Land Type</label>
-                    <select 
+                    <label className="block text-sm font-medium mb-2">
+                      Land Type
+                    </label>
+                    <select
                       value={formData.landType}
-                      onChange={(e) => handleInputChange('landType', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("landType", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none text-white [&>option]:text-black"
                     >
                       <option value="">Select land type</option>
@@ -220,30 +270,42 @@ const SellLandContent = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Zoning</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-sm font-medium mb-2">
+                      Zoning
+                    </label>
+                    <input
+                      type="text"
                       placeholder="e.g., Residential Zone R1"
                       value={formData.zoning}
-                      onChange={(e) => handleInputChange('zoning', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("zoning", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Available Utilities</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-sm font-medium mb-2">
+                      Available Utilities
+                    </label>
+                    <input
+                      type="text"
                       placeholder="e.g., Water, Electricity, Sewer"
                       value={formData.utilities}
-                      onChange={(e) => handleInputChange('utilities', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("utilities", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Road Access</label>
-                    <select 
+                    <label className="block text-sm font-medium mb-2">
+                      Road Access
+                    </label>
+                    <select
                       value={formData.accessibility}
-                      onChange={(e) => handleInputChange('accessibility', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("accessibility", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none text-white [&>option]:text-black"
                     >
                       <option value="">Select access type</option>
@@ -255,22 +317,30 @@ const SellLandContent = () => {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <textarea 
+                  <label className="block text-sm font-medium mb-2">
+                    Description
+                  </label>
+                  <textarea
                     placeholder="Describe the property, its features, and any additional information..."
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("description", e.target.value)
+                    }
                     rows={4}
                     className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none resize-none"
                   />
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium mb-2">Nearby Amenities</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium mb-2">
+                    Nearby Amenities
+                  </label>
+                  <input
+                    type="text"
                     placeholder="e.g., Schools, Hospitals, Shopping Centers"
                     value={formData.nearbyAmenities}
-                    onChange={(e) => handleInputChange('nearbyAmenities', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("nearbyAmenities", e.target.value)
+                    }
                     className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                   />
                 </div>
@@ -278,35 +348,49 @@ const SellLandContent = () => {
 
               {/* Seller Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Seller Information</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Seller Information
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Full Name</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-sm font-medium mb-2">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
                       placeholder="Enter your full name"
                       value={formData.sellerName}
-                      onChange={(e) => handleInputChange('sellerName', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("sellerName", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Phone Number</label>
-                    <input 
-                      type="tel" 
+                    <label className="block text-sm font-medium mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
                       placeholder="e.g., +254 700 000 000"
                       value={formData.sellerPhone}
-                      onChange={(e) => handleInputChange('sellerPhone', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("sellerPhone", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Email Address</label>
-                    <input 
-                      type="email" 
+                    <label className="block text-sm font-medium mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
                       placeholder="your.email@example.com"
                       value={formData.sellerEmail}
-                      onChange={(e) => handleInputChange('sellerEmail', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("sellerEmail", e.target.value)
+                      }
                       className="w-full px-4 py-2 rounded-lg bg-card/50 border border-border/50 focus:border-primary/50 focus:outline-none"
                     />
                   </div>
@@ -315,12 +399,14 @@ const SellLandContent = () => {
 
               {/* Documents Upload */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Required Documents</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Required Documents
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { key: 'titleDeed', label: 'Title Deed' },
-                    { key: 'surveyReport', label: 'Survey Report' },
-                    { key: 'taxCertificate', label: 'Tax Certificate' }
+                    { key: "titleDeed", label: "Title Deed" },
+                    { key: "surveyReport", label: "Survey Report" },
+                    { key: "taxCertificate", label: "Tax Certificate" },
                   ].map((doc) => (
                     <div key={doc.key} className="relative">
                       <input
@@ -338,12 +424,20 @@ const SellLandContent = () => {
                         className="block p-4 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
                       >
                         <div className="text-center">
-                          {uploadedDocs[doc.key as keyof typeof uploadedDocs] ? (
+                          {uploadedDocs[
+                            doc.key as keyof typeof uploadedDocs
+                          ] ? (
                             <div>
                               <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                              <p className="text-sm font-medium text-green-400">{doc.label}</p>
+                              <p className="text-sm font-medium text-green-400">
+                                {doc.label}
+                              </p>
                               <p className="text-xs text-muted-foreground">
-                                {uploadedDocs[doc.key as keyof typeof uploadedDocs]?.name}
+                                {
+                                  uploadedDocs[
+                                    doc.key as keyof typeof uploadedDocs
+                                  ]?.name
+                                }
                               </p>
                               <button
                                 type="button"
@@ -360,7 +454,9 @@ const SellLandContent = () => {
                             <div>
                               <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                               <p className="text-sm font-medium">{doc.label}</p>
-                              <p className="text-xs text-muted-foreground">Click to upload</p>
+                              <p className="text-xs text-muted-foreground">
+                                Click to upload
+                              </p>
                             </div>
                           )}
                         </div>
@@ -372,8 +468,10 @@ const SellLandContent = () => {
 
               {/* Images Upload */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Property Images (Max 4)</h3>
-                
+                <h3 className="text-lg font-semibold mb-4">
+                  Property Images (Max 4)
+                </h3>
+
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     {uploadedImages.map((image, index) => (
@@ -393,7 +491,7 @@ const SellLandContent = () => {
                     ))}
                   </div>
                 )}
-                
+
                 {uploadedImages.length < 4 && (
                   <div>
                     <input
@@ -427,21 +525,33 @@ const SellLandContent = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-4 pt-6">
-                <button 
+                <button
                   onClick={() => handleSubmit(true)}
-                  disabled={isSubmitting || !formData.title || !formData.location || !formData.size || !formData.price}
+                  disabled={
+                    isSubmitting ||
+                    !formData.title ||
+                    !formData.location ||
+                    !formData.size ||
+                    !formData.price
+                  }
                   className="flex items-center gap-2 px-6 py-3 rounded-lg bg-card/50 border border-border/50 hover:border-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-4 h-4" />
-                  {isSubmitting ? 'Creating...' : 'Create Listing'}
+                  {isSubmitting ? "Creating..." : "Create Listing"}
                 </button>
-                <button 
+                <button
                   onClick={() => handleSubmit(false)}
-                  disabled={isSubmitting || !formData.title || !formData.location || !formData.size || !formData.price}
+                  disabled={
+                    isSubmitting ||
+                    !formData.title ||
+                    !formData.location ||
+                    !formData.size ||
+                    !formData.price
+                  }
                   className="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Shield className="w-4 h-4" />
-                  {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
+                  {isSubmitting ? "Submitting..." : "Submit for Verification"}
                 </button>
               </div>
             </div>
@@ -484,7 +594,7 @@ const statusConfig = {
 };
 
 export default function Hero() {
-  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
+  const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [backendListings, setBackendListings] = useState<LandListing[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -498,76 +608,106 @@ export default function Hero() {
       // Fetch from Hedera backend (minted parcels)
       let hederaListings: LandListing[] = [];
       try {
-        const res = await api.getParcels('minted');
+        const res = await api.getParcels("minted");
         const items = Array.isArray(res?.items) ? res.items : [];
-        hederaListings = await Promise.all(items.map(async (p: any) => {
-          let imageUrl: string | undefined;
-          if (p.metadataHash) {
-            try {
-              const r = await fetch(`https://gateway.pinata.cloud/ipfs/${p.metadataHash}`);
-              if (r.ok) {
-                const j = await r.json();
-                let first = Array.isArray(j?.images) && j.images.length > 0 ? j.images[0] : null;
-                if (!first && j?.documents && Array.isArray(j.documents.additional) && j.documents.additional.length > 0) {
-                  first = j.documents.additional[0];
+        hederaListings = await Promise.all(
+          items.map(async (p: any) => {
+            let imageUrl: string | undefined;
+            if (p.metadataHash) {
+              try {
+                const r = await fetch(
+                  `https://gateway.pinata.cloud/ipfs/${p.metadataHash}`,
+                );
+                if (r.ok) {
+                  const j = await r.json();
+                  let first =
+                    Array.isArray(j?.images) && j.images.length > 0
+                      ? j.images[0]
+                      : null;
+                  if (
+                    !first &&
+                    j?.documents &&
+                    Array.isArray(j.documents.additional) &&
+                    j.documents.additional.length > 0
+                  ) {
+                    first = j.documents.additional[0];
+                  }
+                  const cid =
+                    typeof first === "string"
+                      ? first
+                      : first?.cid || first?.ipfsHash || first?.hash;
+                  imageUrl = cid
+                    ? `https://gateway.pinata.cloud/ipfs/${cid}`
+                    : (first?.url as string | undefined);
                 }
-                const cid = typeof first === 'string' ? first : (first?.cid || first?.ipfsHash || first?.hash);
-                imageUrl = cid ? `https://gateway.pinata.cloud/ipfs/${cid}` : (first?.url as string | undefined);
-              }
-            } catch {}
-          }
-          return {
-            id: String(p.landId),
-            location: p.location || 'Unknown',
-            area: p.size || '',
-            price: (p.price ?? '').toString(),
-            title: p.location || undefined,
-            verificationStatus: 'verified' as const,
-            inspectors: 2,
-            imageGradient: 'from-blue-500/20 via-indigo-500/20 to-purple-500/20',
-            lastUpdated: new Date(p.submittedAt || Date.now()).toLocaleDateString(),
-            imageUrl,
-            description: undefined,
-            landType: undefined,
-            seller: undefined
-          } as LandListing;
-        }));
+              } catch {}
+            }
+            return {
+              id: String(p.landId),
+              location: p.location || "Unknown",
+              area: p.size || "",
+              price: (p.price ?? "").toString(),
+              title: p.location || undefined,
+              verificationStatus: "verified" as const,
+              inspectors: 2,
+              imageGradient:
+                "from-blue-500/20 via-indigo-500/20 to-purple-500/20",
+              lastUpdated: new Date(
+                p.submittedAt || Date.now(),
+              ).toLocaleDateString(),
+              imageUrl,
+              description: undefined,
+              landType: undefined,
+              seller: undefined,
+            } as LandListing;
+          }),
+        );
       } catch (error) {
-        console.error('Failed to fetch Hedera listings:', error);
+        console.error("Failed to fetch Hedera listings:", error);
       }
 
       // Fetch from local SQLite backend (port 5000)
       let localListings: LandListing[] = [];
       try {
-        const response = await fetch('http://localhost:5000/api/listings');
+        const response = await fetch("http://localhost:5000/api/listings");
         if (response.ok) {
           const data = await response.json();
-          localListings = data.map((listing: any) => ({
-            id: listing.id,
-            location: listing.location,
-            area: listing.size,
-            price: listing.price.toString(),
-            title: listing.title,
-            verificationStatus: listing.status === 'verified' ? 'verified' : 
-                               listing.status === 'pending_verification' ? 'pending' : 'unverified',
-            inspectors: 2,
-            imageGradient: 'from-emerald-500/20 via-teal-500/20 to-cyan-500/20',
-            lastUpdated: new Date(listing.createdAt).toLocaleDateString(),
-            imageUrl: listing.images?.[0]?.path ? `http://localhost:5000${listing.images[0].path}` : undefined,
-            description: listing.description,
-            landType: listing.landType,
-            seller: listing.seller,
-            images: listing.images
-          } as LandListing));
+          localListings = data.map(
+            (listing: any) =>
+              ({
+                id: listing.id,
+                location: listing.location,
+                area: listing.size,
+                price: listing.price.toString(),
+                title: listing.title,
+                verificationStatus:
+                  listing.status === "verified"
+                    ? "verified"
+                    : listing.status === "pending_verification"
+                      ? "pending"
+                      : "unverified",
+                inspectors: 2,
+                imageGradient:
+                  "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
+                lastUpdated: new Date(listing.createdAt).toLocaleDateString(),
+                imageUrl: listing.images?.[0]?.path
+                  ? `http://localhost:5000${listing.images[0].path}`
+                  : undefined,
+                description: listing.description,
+                landType: listing.landType,
+                seller: listing.seller,
+                images: listing.images,
+              }) as LandListing,
+          );
         }
       } catch (error) {
-        console.error('Failed to fetch local listings:', error);
+        console.error("Failed to fetch local listings:", error);
       }
 
       // Combine both sources
       setBackendListings([...localListings, ...hederaListings]);
     } catch (error) {
-      console.error('Failed to fetch listings:', error);
+      console.error("Failed to fetch listings:", error);
     } finally {
       setIsLoading(false);
     }
@@ -581,7 +721,10 @@ export default function Hero() {
   const allListings = backendListings;
 
   return (
-    <section ref={ref} className="relative py-20 px-4 bg-gradient-to-br from-background via-background to-primary/5">
+    <section
+      ref={ref}
+      className="relative py-20 px-4 bg-gradient-to-br from-background via-background to-primary/5"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -609,10 +752,9 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-xl text-foreground/85 max-w-2xl mx-auto"
           >
-            {activeTab === 'buy' 
-              ? 'Browse verified properties with transparent ownership records secured on Hedera blockchain'
-              : 'Transform your property into a digital asset with blockchain-verified ownership and reach global buyers through our secure marketplace'
-            }
+            {activeTab === "buy"
+              ? "Browse verified properties with transparent ownership records secured on Hedera blockchain"
+              : "Transform your property into a digital asset with blockchain-verified ownership and reach global buyers through our secure marketplace"}
           </motion.p>
 
           {/* Buy/Sell Toggle Buttons */}
@@ -623,16 +765,16 @@ export default function Hero() {
             className="mt-8 flex items-center justify-center gap-6 mb-8"
           >
             <motion.button
-              onClick={() => setActiveTab('buy')}
+              onClick={() => setActiveTab("buy")}
               className={`group relative px-8 py-4 font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg transition-all duration-300 ${
-                activeTab === 'buy'
-                  ? 'bg-gradient-to-r from-primary to-accent text-white shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm'
-                  : 'bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/30'
+                activeTab === "buy"
+                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm"
+                  : "bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/30"
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {activeTab === 'buy' && (
+              {activeTab === "buy" && (
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   initial={{ x: "-100%" }}
@@ -643,16 +785,16 @@ export default function Hero() {
               <span className="relative z-10">Buy Land</span>
             </motion.button>
             <motion.button
-              onClick={() => setActiveTab('sell')}
+              onClick={() => setActiveTab("sell")}
               className={`group relative px-8 py-4 font-bold rounded-lg overflow-hidden flex items-center gap-3 text-lg transition-all duration-300 ${
-                activeTab === 'sell'
-                  ? 'bg-gradient-to-r from-primary to-accent text-white shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm'
-                  : 'bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/30'
+                activeTab === "sell"
+                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-[0_0_40px_rgba(59,130,246,1)] border-2 border-white/30 backdrop-blur-sm"
+                  : "bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/30"
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {activeTab === 'sell' && (
+              {activeTab === "sell" && (
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   initial={{ x: "-100%" }}
@@ -682,11 +824,13 @@ export default function Hero() {
         </motion.div>
 
         {/* Listings Grid */}
-        {activeTab === 'buy' ? (
+        {activeTab === "buy" ? (
           <div className="space-y-6">
             {/* Add Listing Button */}
             <div className="flex justify-between items-center">
-              <h3 className="text-xl font-semibold text-foreground">Available Land Listings</h3>
+              <h3 className="text-xl font-semibold text-foreground">
+                Available Land Listings
+              </h3>
               <Link to="/seller-dashboard">
                 <motion.button
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -698,7 +842,7 @@ export default function Hero() {
                 </motion.button>
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {isLoading ? (
                 <div className="col-span-full text-center py-8">
@@ -711,10 +855,23 @@ export default function Hero() {
                   const StatusIcon = status.icon;
 
                   return (
-                    <Link key={listing.id} to={`/land/${listing.id}`} className="block">
+                    <Link
+                      key={listing.id}
+                      to={`/land/${listing.id}`}
+                      className="block"
+                    >
                       <motion.div
-                        initial={{ opacity: 0, y: 50, scale: 0.8, rotateY: -25 }}
-                        animate={isInView ? { opacity: 1, y: 0, scale: 1, rotateY: 0 } : {}}
+                        initial={{
+                          opacity: 0,
+                          y: 50,
+                          scale: 0.8,
+                          rotateY: -25,
+                        }}
+                        animate={
+                          isInView
+                            ? { opacity: 1, y: 0, scale: 1, rotateY: 0 }
+                            : {}
+                        }
                         transition={{
                           duration: 0.8,
                           delay: index * 0.2,
@@ -725,9 +882,9 @@ export default function Hero() {
                           scale: 1.03,
                           rotateY: 5,
                           rotateX: -5,
-                          transition: { 
+                          transition: {
                             duration: 0.4,
-                            ease: "easeOut"
+                            ease: "easeOut",
                           },
                         }}
                         onHoverStart={() => setHoveredCard(listing.id)}
@@ -742,16 +899,20 @@ export default function Hero() {
                             opacity: hoveredCard === listing.id ? 1 : 0,
                             rotate: hoveredCard === listing.id ? 360 : 0,
                           }}
-                          transition={{ 
+                          transition={{
                             opacity: { duration: 0.3 },
-                            rotate: { duration: 3, repeat: Infinity, ease: "linear" }
+                            rotate: {
+                              duration: 3,
+                              repeat: Infinity,
+                              ease: "linear",
+                            },
                           }}
                         />
 
                         {/* Card */}
                         <div className="relative h-full bg-card rounded-2xl border border-border/70 overflow-hidden transition-all duration-300 group-hover:border-primary/50">
                           {/* Top glow effect */}
-                          <motion.div 
+                          <motion.div
                             className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent"
                             animate={{
                               opacity: hoveredCard === listing.id ? 1 : 0,
@@ -762,7 +923,7 @@ export default function Hero() {
                           {/* Content */}
                           <div className="relative p-6 space-y-4">
                             {/* Image area */}
-                            <motion.div 
+                            <motion.div
                               className={`relative h-40 -mx-6 -mt-6 mb-4 bg-muted overflow-hidden`}
                               animate={{
                                 scale: hoveredCard === listing.id ? 1.05 : 1,
@@ -777,9 +938,11 @@ export default function Hero() {
                                   className="absolute inset-0 w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className={`absolute inset-0 bg-gradient-to-br ${listing.imageGradient}`} />
+                                <div
+                                  className={`absolute inset-0 bg-gradient-to-br ${listing.imageGradient}`}
+                                />
                               )}
-                              
+
                               {/* Overlay gradient */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                             </motion.div>
@@ -799,9 +962,11 @@ export default function Hero() {
                                 {status.label}
                               </motion.div>
                             </div>
-                            
+
                             {listing.title && (
-                              <p className="text-sm text-muted-foreground mb-2">{listing.location}</p>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {listing.location}
+                              </p>
                             )}
 
                             <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
@@ -811,9 +976,11 @@ export default function Hero() {
                               </span>
                               <span>{listing.inspectors || 0} inspectors</span>
                             </div>
-                            
+
                             {listing.description && (
-                              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{listing.description}</p>
+                              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                                {listing.description}
+                              </p>
                             )}
 
                             <div className="flex items-center justify-between">
@@ -825,7 +992,7 @@ export default function Hero() {
                                   {listing.lastUpdated}
                                 </div>
                               </div>
-                              
+
                               <motion.div
                                 className="flex items-center gap-1 text-xs text-muted-foreground"
                                 animate={{
@@ -847,7 +1014,10 @@ export default function Hero() {
             </div>
           </div>
         ) : (
-          <SellLandContent />
+          <SellLandContent
+            fetchListings={fetchListings}
+            setActiveTab={setActiveTab}
+          />
         )}
 
         {/* Blockchain verification indicator */}
@@ -858,9 +1028,9 @@ export default function Hero() {
           className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground"
         >
           <motion.div
-            animate={{ 
+            animate={{
               scale: [1, 1.3, 1],
-              opacity: [1, 0.7, 1]
+              opacity: [1, 0.7, 1],
             }}
             transition={{ duration: 2, repeat: Infinity }}
             className="w-2 h-2 rounded-full bg-emerald-500"
