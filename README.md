@@ -1,4 +1,4 @@
-# 🏡 BIMA - Decentralized Land Marketplace
+#  BIMA - Decentralized Land Marketplace
 
 > **Hedera Track: Transforming Land Ownership in Africa through Blockchain**
 
@@ -221,17 +221,19 @@ Tech Stack
 " />
 
 ### 👤 User Dashboard
-*[Paste dashboard screenshot here]*
+*<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/13b0ed5c-7558-443c-a8ec-3967abd77b7b" />
+*
 **Features:**
 - Portfolio overview of owned land NFTs
 - Transaction history and status tracking
 - Role-specific quick actions
 - Reputation score display for inspectors
 
-<img width="948" alt="User Dashboard" src="https://github.com/user-attachments/assets/dashboard-screenshot" />
+
 
 ### 🏡 Land Listing & Marketplace
-*[<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/7dc0d9b2-b09f-4d02-876c-5fb3e7a27901" />
+*[<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/35c528b1-57a3-4c8c-afd3-fd783ce4e2f3" />
+" />
 *
 **Features:**
 - Interactive map view of available properties
@@ -239,10 +241,10 @@ Tech Stack
 - Property cards with verification status
 - Quick purchase and inquiry actions
 
-<img width="950" alt="Marketplace View" src="https://github.com/user-attachments/assets/marketplace-screenshot" />
 
 ### 📝 Land Listing Creation
-*<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/e074cbb8-069c-40ad-9af5-b8e10479ebf8" />
+*<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/4d09e8dc-835d-4f90-ace7-77dbbf5d1b8b" />
+" />
 *
 **Features:**
 - Step-by-step listing wizard
@@ -250,11 +252,9 @@ Tech Stack
 - Location mapping integration
 - Preview before submission
 
-<img width="959" alt="Create Listing" src="https://github.com/user-attachments/assets/listing-creation-screenshot" />
-
 ### 🔍 Inspector Verification Portal
-*<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/f6787a58-9f33-4cf6-b377-8f53d65d3c09" />*
-*![Uploading image.png…]()*
+*<img width="1832" height="954" alt="image" src="<img width="1832" height="954" alt="image" src="https://github.com/user-attachments/assets/83ac79a7-4584-4265-9a1a-5fb6e7e719ce" />" />*
+
 
 **Features:**
 - Pending verification queue
@@ -262,7 +262,6 @@ Tech Stack
 - Multi-signature approval interface
 - Reputation and performance metrics
 
-<img width="947" alt="Inspector Portal" src="https://github.com/user-attachments/assets/inspector-portal-screenshot" />
 
 ## ✨ Key Features
 
