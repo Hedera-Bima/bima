@@ -14,7 +14,7 @@ const MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use("/storage", express.static(path.join(__dirname, "storage")));
 
 // Ensure uploads directory exists
 fs.ensureDirSync('uploads/images');
@@ -47,25 +47,31 @@ const readListings = () => {
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = file.fieldname === 'images' ? 'uploads/images' : 'uploads/documents';
+    const storageDir = path.join(__dirname, "storage");
+    const uploadPath =
+      file.fieldname === "images"
+        ? path.join(storageDir, "uploads", "images")
+        : path.join(storageDir, "uploads", "documents");
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${uuidv4()}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
-  }
+  },
 });
 
 // Chat proxy to OpenAI (secure, uses backend API key)
-app.post('/api/chat', async (req, res) => {
+app.post("/api/chat", async (req, res) => {
   try {
     const { messages } = req.body || {};
     if (!Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: 'Missing messages array' });
+      return res.status(400).json({ error: "Missing messages array" });
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'OPENAI_API_KEY not configured on server' });
+      return res
+        .status(500)
+        .json({ error: "OPENAI_API_KEY not configured on server" });
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -76,12 +82,17 @@ app.post('/api/chat', async (req, res) => {
       temperature: 0.7,
     });
 
-    const reply = completion.choices?.[0]?.message?.content || '';
+    const reply = completion.choices?.[0]?.message?.content || "";
     return res.json({ reply });
   } catch (error) {
-    const errPayload = error?.response?.data || { message: error.message || 'Unknown error' };
-    console.error('OpenAI proxy error:', errPayload);
-    const payload = process.env.NODE_ENV === 'production' ? { error: 'Failed to get response from model' } : { error: 'Failed to get response from model', details: errPayload };
+    const errPayload = error?.response?.data || {
+      message: error.message || "Unknown error",
+    };
+    console.error("OpenAI proxy error:", errPayload);
+    const payload =
+      process.env.NODE_ENV === "production"
+        ? { error: "Failed to get response from model" }
+        : { error: "Failed to get response from model", details: errPayload };
     return res.status(500).json(payload);
   }
 });
@@ -92,46 +103,46 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'images') {
+    if (file.fieldname === "images") {
       // Accept images only
-      if (file.mimetype.startsWith('image/')) {
+      if (file.mimetype.startsWith("image/")) {
         cb(null, true);
       } else {
-        cb(new Error('Only image files are allowed for property images'));
+        cb(new Error("Only image files are allowed for property images"));
       }
     } else {
       // Accept documents (PDF, DOC, DOCX, etc.)
       const allowedMimes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'image/jpeg',
-        'image/png'
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/jpeg",
+        "image/png",
       ];
       if (allowedMimes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new Error('Invalid document format'));
+        cb(new Error("Invalid document format"));
       }
     }
-  }
+  },
 });
 
 // Routes
 
 // Get all listings
-app.get('/api/listings', (req, res) => {
+app.get("/api/listings", (req, res) => {
   try {
     const listings = readListings();
     res.json(listings);
   } catch (error) {
-    console.error('Error fetching listings:', error);
-    res.status(500).json({ error: 'Failed to fetch listings' });
+    console.error("Error fetching listings:", error);
+    res.status(500).json({ error: "Failed to fetch listings" });
   }
 });
 
 // Get single listing by ID
-app.get('/api/listings/:id', (req, res) => {
+app.get("/api/listings/:id", (req, res) => {
   try {
     console.log('Fetching listing with ID:', req.params.id);
     const listings = readListings();
@@ -140,98 +151,111 @@ app.get('/api/listings/:id', (req, res) => {
     console.log('Found listing:', listing ? 'Yes' : 'No');
     
     if (!listing) {
-      console.log('Listing not found, returning 404');
-      return res.status(404).json({ error: 'Listing not found' });
+      console.log("Listing not found, returning 404");
+      return res.status(404).json({ error: "Listing not found" });
     }
-    
-    console.log('Returning single listing with price:', listing.price);
+
+    console.log("Returning single listing with price:", listing.price);
     res.json(listing);
   } catch (error) {
-    console.error('Error in /api/listings/:id:', error);
-    res.status(500).json({ error: 'Failed to fetch listing' });
+    console.error("Error in /api/listings/:id:", error);
+    res.status(500).json({ error: "Failed to fetch listing" });
   }
 });
 
 // Create new listing
-app.post('/api/listings', upload.fields([
-  { name: 'images', maxCount: 4 },
-  { name: 'titleDeed', maxCount: 1 },
-  { name: 'surveyReport', maxCount: 1 },
-  { name: 'taxCertificate', maxCount: 1 }
-]), (req, res) => {
-  try {
-    const {
-      title,
-      location,
-      size,
-      price,
-      description,
-      landType,
-      zoning,
-      utilities,
-      accessibility,
-      nearbyAmenities,
-      sellerName,
-      sellerPhone,
-      sellerEmail,
-      metadataHash
-    } = req.body;
+app.post(
+  "/api/listings",
+  upload.fields([
+    { name: "images", maxCount: 4 },
+    { name: "titleDeed", maxCount: 1 },
+    { name: "surveyReport", maxCount: 1 },
+    { name: "taxCertificate", maxCount: 1 },
+  ]),
+  (req, res) => {
+    try {
+      const {
+        title,
+        location,
+        size,
+        price,
+        description,
+        landType,
+        zoning,
+        utilities,
+        accessibility,
+        nearbyAmenities,
+        sellerName,
+        sellerPhone,
+        sellerEmail,
+        metadataHash,
+      } = req.body;
 
-    // Validate required fields
-    if (!title || !location || !size || !price) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
+      // Validate required fields
+      if (!title || !location || !size || !price) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
 
-    // Process uploaded files
-    const images = req.files.images ? req.files.images.map(file => ({
-      filename: file.filename,
-      originalName: file.originalname,
-      path: `/uploads/images/${file.filename}`
-    })) : [];
+      // Process uploaded files
+      const images = req.files.images
+        ? req.files.images.map((file) => ({
+            filename: file.filename,
+            originalName: file.originalname,
+            path: `/storage/uploads/images/${file.filename}`,
+          }))
+        : [];
 
-    const documents = {
-      titleDeed: req.files.titleDeed ? {
-        filename: req.files.titleDeed[0].filename,
-        originalName: req.files.titleDeed[0].originalname,
-        path: `/uploads/documents/${req.files.titleDeed[0].filename}`
-      } : null,
-      surveyReport: req.files.surveyReport ? {
-        filename: req.files.surveyReport[0].filename,
-        originalName: req.files.surveyReport[0].originalname,
-        path: `/uploads/documents/${req.files.surveyReport[0].filename}`
-      } : null,
-      taxCertificate: req.files.taxCertificate ? {
-        filename: req.files.taxCertificate[0].filename,
-        originalName: req.files.taxCertificate[0].originalname,
-        path: `/uploads/documents/${req.files.taxCertificate[0].filename}`
-      } : null
-    };
+      const documents = {
+        titleDeed: req.files.titleDeed
+          ? {
+              filename: req.files.titleDeed[0].filename,
+              originalName: req.files.titleDeed[0].originalname,
+              path: `/storage/uploads/documents/${req.files.titleDeed[0].filename}`,
+            }
+          : null,
+        surveyReport: req.files.surveyReport
+          ? {
+              filename: req.files.surveyReport[0].filename,
+              originalName: req.files.surveyReport[0].originalname,
+              path: `/storage/uploads/documents/${req.files.surveyReport[0].filename}`,
+            }
+          : null,
+        taxCertificate: req.files.taxCertificate
+          ? {
+              filename: req.files.taxCertificate[0].filename,
+              originalName: req.files.taxCertificate[0].originalname,
+              path: `/storage/uploads/documents/${req.files.taxCertificate[0].filename}`,
+            }
+          : null,
+      };
 
-    // Create new listing
-    const newListing = {
-      id: uuidv4(),
-      title,
-      location,
-      size,
-      price: parseFloat(price),
-      description,
-      landType,
-      zoning,
-      utilities: utilities ? utilities.split(',').map(u => u.trim()) : [],
-      accessibility,
-      nearbyAmenities: nearbyAmenities ? nearbyAmenities.split(',').map(a => a.trim()) : [],
-      images,
-      documents,
-      seller: {
-        name: sellerName,
-        phone: sellerPhone,
-        email: sellerEmail
-      },
-      metadataHash: metadataHash || null,
-      status: 'pending_verification',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      // Create new listing
+      const newListing = {
+        id: uuidv4(),
+        title,
+        location,
+        size,
+        price: parseFloat(price),
+        description,
+        landType,
+        zoning,
+        utilities: utilities ? utilities.split(",").map((u) => u.trim()) : [],
+        accessibility,
+        nearbyAmenities: nearbyAmenities
+          ? nearbyAmenities.split(",").map((a) => a.trim())
+          : [],
+        images,
+        documents,
+        seller: {
+          name: sellerName,
+          phone: sellerPhone,
+          email: sellerEmail,
+        },
+        metadataHash: metadataHash || null,
+        status: "pending_verification",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
     // Save to database
     const db = readDatabase();
@@ -246,9 +270,11 @@ app.post('/api/listings', upload.fields([
     console.error('Error creating listing:', error);
     res.status(500).json({ error: 'Failed to create listing' });
   }
+}
+);
 
 // Update listing status (for verification)
-app.patch('/api/listings/:id/status', (req, res) => {
+app.patch("/api/listings/:id/status", (req, res) => {
   try {
     const { status, verificationStatus } = req.body;
     const db = readDatabase();
@@ -276,13 +302,13 @@ app.patch('/api/listings/:id/status', (req, res) => {
       listing: db.listings[idx]
     });
   } catch (error) {
-    console.error('Error updating listing:', error);
-    res.status(500).json({ error: 'Failed to update listing' });
+    console.error("Error updating listing:", error);
+    res.status(500).json({ error: "Failed to update listing" });
   }
 });
 
 // Delete listing
-app.delete('/api/listings/:id', (req, res) => {
+app.delete("/api/listings/:id", (req, res) => {
   try {
     const db = readDatabase();
     const idx = db.listings.findIndex(l => l.id === req.params.id);
@@ -294,8 +320,14 @@ app.delete('/api/listings/:id', (req, res) => {
 
     // Remove associated files
     if (listing.images && listing.images.length > 0) {
-      listing.images.forEach(image => {
-        const imagePath = path.join(__dirname, 'uploads/images', image.filename);
+      listing.images.forEach((image) => {
+        const imagePath = path.join(
+          __dirname,
+          "storage",
+          "uploads",
+          "images",
+          image.filename,
+        );
         if (fs.existsSync(imagePath)) {
           fs.removeSync(imagePath);
         }
@@ -303,9 +335,15 @@ app.delete('/api/listings/:id', (req, res) => {
     }
 
     if (listing.documents) {
-      Object.values(listing.documents).forEach(doc => {
+      Object.values(listing.documents).forEach((doc) => {
         if (doc) {
-          const docPath = path.join(__dirname, 'uploads/documents', doc.filename);
+          const docPath = path.join(
+            __dirname,
+            "storage",
+            "uploads",
+            "documents",
+            doc.filename,
+          );
           if (fs.existsSync(docPath)) {
             fs.removeSync(docPath);
           }
@@ -319,25 +357,27 @@ app.delete('/api/listings/:id', (req, res) => {
 
     res.json({ message: 'Listing deleted successfully' });
   } catch (error) {
-    console.error('Error deleting listing:', error);
-    res.status(500).json({ error: 'Failed to delete listing' });
+    console.error("Error deleting listing:", error);
+    res.status(500).json({ error: "Failed to delete listing" });
   }
 });
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
 // Error handling middleware
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res
+        .status(400)
+        .json({ error: "File too large. Maximum size is 10MB." });
     }
   }
-  
-  res.status(500).json({ error: error.message || 'Internal server error' });
+
+  res.status(500).json({ error: error.message || "Internal server error" });
 });
 
 // Start server
