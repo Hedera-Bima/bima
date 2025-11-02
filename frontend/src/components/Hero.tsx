@@ -491,46 +491,81 @@ export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
-  // Fetch listings from Hedera backend (minted parcels)
+  // Fetch listings from both Hedera backend and local SQLite backend
   const fetchListings = async () => {
     setIsLoading(true);
     try {
-      const res = await api.getParcels('minted');
-      const items = Array.isArray(res?.items) ? res.items : [];
-      const formatted = await Promise.all(items.map(async (p: any) => {
-        let imageUrl: string | undefined;
-        if (p.metadataHash) {
-          try {
-            const r = await fetch(`https://gateway.pinata.cloud/ipfs/${p.metadataHash}`);
-            if (r.ok) {
-              const j = await r.json();
-              let first = Array.isArray(j?.images) && j.images.length > 0 ? j.images[0] : null;
-              if (!first && j?.documents && Array.isArray(j.documents.additional) && j.documents.additional.length > 0) {
-                // backward-compat: older metadata stored image hashes in documents.additional
-                first = j.documents.additional[0];
+      // Fetch from Hedera backend (minted parcels)
+      let hederaListings: LandListing[] = [];
+      try {
+        const res = await api.getParcels('minted');
+        const items = Array.isArray(res?.items) ? res.items : [];
+        hederaListings = await Promise.all(items.map(async (p: any) => {
+          let imageUrl: string | undefined;
+          if (p.metadataHash) {
+            try {
+              const r = await fetch(`https://gateway.pinata.cloud/ipfs/${p.metadataHash}`);
+              if (r.ok) {
+                const j = await r.json();
+                let first = Array.isArray(j?.images) && j.images.length > 0 ? j.images[0] : null;
+                if (!first && j?.documents && Array.isArray(j.documents.additional) && j.documents.additional.length > 0) {
+                  first = j.documents.additional[0];
+                }
+                const cid = typeof first === 'string' ? first : (first?.cid || first?.ipfsHash || first?.hash);
+                imageUrl = cid ? `https://gateway.pinata.cloud/ipfs/${cid}` : (first?.url as string | undefined);
               }
-              const cid = typeof first === 'string' ? first : (first?.cid || first?.ipfsHash || first?.hash);
-              imageUrl = cid ? `https://gateway.pinata.cloud/ipfs/${cid}` : (first?.url as string | undefined);
-            }
-          } catch {}
+            } catch {}
+          }
+          return {
+            id: String(p.landId),
+            location: p.location || 'Unknown',
+            area: p.size || '',
+            price: (p.price ?? '').toString(),
+            title: p.location || undefined,
+            verificationStatus: 'verified' as const,
+            inspectors: 2,
+            imageGradient: 'from-blue-500/20 via-indigo-500/20 to-purple-500/20',
+            lastUpdated: new Date(p.submittedAt || Date.now()).toLocaleDateString(),
+            imageUrl,
+            description: undefined,
+            landType: undefined,
+            seller: undefined
+          } as LandListing;
+        }));
+      } catch (error) {
+        console.error('Failed to fetch Hedera listings:', error);
+      }
+
+      // Fetch from local SQLite backend (port 5000)
+      let localListings: LandListing[] = [];
+      try {
+        const response = await fetch('http://localhost:5000/api/listings');
+        if (response.ok) {
+          const data = await response.json();
+          localListings = data.map((listing: any) => ({
+            id: listing.id,
+            location: listing.location,
+            area: listing.size,
+            price: listing.price.toString(),
+            title: listing.title,
+            verificationStatus: listing.status === 'verified' ? 'verified' : 
+                               listing.status === 'pending_verification' ? 'pending' : 'unverified',
+            inspectors: 2,
+            imageGradient: 'from-emerald-500/20 via-teal-500/20 to-cyan-500/20',
+            lastUpdated: new Date(listing.createdAt).toLocaleDateString(),
+            imageUrl: listing.images?.[0]?.path ? `http://localhost:5000${listing.images[0].path}` : undefined,
+            description: listing.description,
+            landType: listing.landType,
+            seller: listing.seller,
+            images: listing.images
+          } as LandListing));
         }
-        return {
-          id: String(p.landId),
-          location: p.location || 'Unknown',
-          area: p.size || '',
-          price: (p.price ?? '').toString(),
-          title: p.location || undefined,
-          verificationStatus: 'verified' as const,
-          inspectors: 2,
-          imageGradient: 'from-blue-500/20 via-indigo-500/20 to-purple-500/20',
-          lastUpdated: new Date(p.submittedAt || Date.now()).toLocaleDateString(),
-          imageUrl,
-          description: undefined,
-          landType: undefined,
-          seller: undefined
-        } as LandListing;
-      }));
-      setBackendListings(formatted);
+      } catch (error) {
+        console.error('Failed to fetch local listings:', error);
+      }
+
+      // Combine both sources
+      setBackendListings([...localListings, ...hederaListings]);
     } catch (error) {
       console.error('Failed to fetch listings:', error);
     } finally {
