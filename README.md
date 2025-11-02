@@ -313,7 +313,7 @@ Tech Stack
 ## 🎥 Video Demo
 
 <p align="center">
-  <a href="https://drive.google.com/file/d/your-video-link/view" target="_blank">
+  <a href="https://youtu.be/Bq_2gSNj7os" target="_blank">
     <img src="https://img.icons8.com/clouds/500/video-playlist.png" alt="Watch BIMA Demo Video" width="60%" />
   </a>
 </p>
