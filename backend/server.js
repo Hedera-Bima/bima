@@ -6,6 +6,7 @@ const fs = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const OpenAI = require('openai');
+const { dbHelpers } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -93,39 +94,14 @@ const upload = multer({
   }
 });
 
-// Database file path
-const DB_FILE = path.join(__dirname, 'data', 'listings.json');
-
-// Ensure data directory and file exist
-fs.ensureDirSync('data');
-if (!fs.existsSync(DB_FILE)) {
-  fs.writeJsonSync(DB_FILE, { listings: [] });
-}
-
-// Helper functions
-const readDatabase = () => {
-  try {
-    return fs.readJsonSync(DB_FILE);
-  } catch (error) {
-    return { listings: [] };
-  }
-};
-
-const writeDatabase = (data) => {
-  fs.writeJsonSync(DB_FILE, data, { spaces: 2 });
-};
-
-const readListings = () => {
-  const db = readDatabase();
-  return db.listings;
-};
+// SQLite database is initialized in database.js
 
 // Routes
 
 // Get all listings
 app.get('/api/listings', (req, res) => {
   try {
-    const listings = readListings();
+    const listings = dbHelpers.getAllListings();
     res.json(listings);
   } catch (error) {
     console.error('Error fetching listings:', error);
@@ -137,9 +113,7 @@ app.get('/api/listings', (req, res) => {
 app.get('/api/listings/:id', (req, res) => {
   try {
     console.log('Fetching listing with ID:', req.params.id);
-    const listings = readListings();
-    console.log('Total listings found:', listings.length);
-    const listing = listings.find(l => l.id === req.params.id);
+    const listing = dbHelpers.getListingById(req.params.id);
     console.log('Found listing:', listing ? 'Yes' : 'No');
     
     if (!listing) {
@@ -232,23 +206,16 @@ app.post('/api/listings', upload.fields([
       },
       metadataHash: metadataHash || null,
       status: 'pending_verification',
-      verificationStatus: {
-        documents: 'pending',
-        site: 'pending',
-        legal: 'pending'
-      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
     // Save to database
-    const db = readDatabase();
-    db.listings.push(newListing);
-    writeDatabase(db);
+    const savedListing = dbHelpers.createListing(newListing);
 
     res.status(201).json({
       message: 'Listing created successfully',
-      listing: newListing
+      listing: savedListing
     });
 
   } catch (error) {
@@ -261,32 +228,23 @@ app.post('/api/listings', upload.fields([
 app.patch('/api/listings/:id/status', (req, res) => {
   try {
     const { status, verificationStatus } = req.body;
-    const db = readDatabase();
-    const listingIndex = db.listings.findIndex(l => l.id === req.params.id);
+    const listing = dbHelpers.getListingById(req.params.id);
     
-    if (listingIndex === -1) {
+    if (!listing) {
       return res.status(404).json({ error: 'Listing not found' });
     }
     
-    if (status) {
-      db.listings[listingIndex].status = status;
-    }
-    
-    if (verificationStatus) {
-      db.listings[listingIndex].verificationStatus = {
-        ...db.listings[listingIndex].verificationStatus,
-        ...verificationStatus
-      };
-    }
-    
-    db.listings[listingIndex].updatedAt = new Date().toISOString();
-    writeDatabase(db);
+    const updatedListing = dbHelpers.updateListingStatus(req.params.id, {
+      status,
+      verificationStatus
+    });
     
     res.json({
       message: 'Listing updated successfully',
-      listing: db.listings[listingIndex]
+      listing: updatedListing
     });
   } catch (error) {
+    console.error('Error updating listing:', error);
     res.status(500).json({ error: 'Failed to update listing' });
   }
 });
@@ -294,36 +252,38 @@ app.patch('/api/listings/:id/status', (req, res) => {
 // Delete listing
 app.delete('/api/listings/:id', (req, res) => {
   try {
-    const db = readDatabase();
-    const listingIndex = db.listings.findIndex(l => l.id === req.params.id);
+    const listing = dbHelpers.deleteListing(req.params.id);
     
-    if (listingIndex === -1) {
+    if (!listing) {
       return res.status(404).json({ error: 'Listing not found' });
     }
     
     // Remove associated files
-    const listing = db.listings[listingIndex];
-    
     // Remove images
-    listing.images.forEach(image => {
-      const imagePath = path.join(__dirname, 'uploads/images', image.filename);
-      fs.removeSync(imagePath);
-    });
+    if (listing.images && listing.images.length > 0) {
+      listing.images.forEach(image => {
+        const imagePath = path.join(__dirname, 'uploads/images', image.filename);
+        if (fs.existsSync(imagePath)) {
+          fs.removeSync(imagePath);
+        }
+      });
+    }
     
     // Remove documents
-    Object.values(listing.documents).forEach(doc => {
-      if (doc) {
-        const docPath = path.join(__dirname, 'uploads/documents', doc.filename);
-        fs.removeSync(docPath);
-      }
-    });
-    
-    // Remove from database
-    db.listings.splice(listingIndex, 1);
-    writeDatabase(db);
+    if (listing.documents) {
+      Object.values(listing.documents).forEach(doc => {
+        if (doc) {
+          const docPath = path.join(__dirname, 'uploads/documents', doc.filename);
+          if (fs.existsSync(docPath)) {
+            fs.removeSync(docPath);
+          }
+        }
+      });
+    }
     
     res.json({ message: 'Listing deleted successfully' });
   } catch (error) {
+    console.error('Error deleting listing:', error);
     res.status(500).json({ error: 'Failed to delete listing' });
   }
 });
@@ -348,5 +308,5 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Bima Backend Server running on port ${PORT}`);
   console.log(`📁 Uploads directory: ${path.join(__dirname, 'uploads')}`);
-  console.log(`💾 Database file: ${DB_FILE}`);
+  console.log(`💾 Database: SQLite (${path.join(__dirname, 'data', 'bima.db')})`);
 });
