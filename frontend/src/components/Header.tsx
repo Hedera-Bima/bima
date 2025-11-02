@@ -12,6 +12,8 @@ const Header: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string>("home");
+  const [evmAddress, setEvmAddress] = useState<string | null>(null);
+  const [hbarBalance, setHbarBalance] = useState<number | null>(null);
   const location = useLocation();
 
   const navLinks = [
@@ -36,23 +38,47 @@ const Header: React.FC = () => {
   }, [location.pathname]);
 
   // No persisted session support for WalletConnect path here; we reflect state once AccountsChanged fires
+  const network = (import.meta as any).env?.VITE_HEDERA_NETWORK?.toLowerCase?.() || 'testnet';
+  const mirrorBase = network === 'mainnet'
+    ? 'https://mainnet-public.mirrornode.hedera.com'
+    : network === 'previewnet'
+      ? 'https://previewnet.mirrornode.hedera.com'
+      : 'https://testnet.mirrornode.hedera.com';
+
+  const fetchAccountInfo = async (id: string) => {
+    try {
+      const res = await fetch(`${mirrorBase}/api/v1/accounts/${encodeURIComponent(id)}`);
+      if (!res.ok) throw new Error(`Mirror node ${res.status}`);
+      const data = await res.json();
+      const evm = data?.evm_address || data?.alias;
+      const tinybar = data?.balance?.balance; // in tinybars
+      setEvmAddress(evm || null);
+      setHbarBalance(typeof tinybar === 'number' ? tinybar / 1e8 : null);
+    } catch (err) {
+      console.error('Failed to fetch account info from mirror node', err);
+      setEvmAddress(null);
+      setHbarBalance(null);
+    }
+  };
 
   const handleConnect = async () => {
     if (isConnecting) return;
     try {
       setIsConnecting(true);
-      await openConnectModal();
-      // Register once per click to ensure we capture the immediate event
-      onSessionEvent(HederaSessionEvent.AccountsChanged, (payload: any) => {
+      // Register first to avoid missing an immediate AccountsChanged event
+      await onSessionEvent(HederaSessionEvent.AccountsChanged as any, (payload: any) => {
         try {
-          // Accept a variety of payload shapes
           const list = Array.isArray(payload) ? payload : (payload?.accounts ?? payload?.accountIds ?? []);
           const first = Array.isArray(list) ? list[0] : null;
-          if (typeof first === 'string') setAccountId(first);
+          if (typeof first === 'string') {
+            setAccountId(first);
+            fetchAccountInfo(first);
+          }
         } catch (err) {
           console.error('Failed to parse AccountsChanged payload', err, payload);
         }
       });
+      await openConnectModal();
     } catch (e) {
       console.error('Failed to open WalletConnect modal:', e);
     } finally {
@@ -139,8 +165,14 @@ const Header: React.FC = () => {
               className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <Wallet className="w-5 h-5" />
-              <span>
-                {isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId}` : 'Connect Wallet'}
+              <span className="text-left">
+                {isConnecting
+                  ? 'Connecting…'
+                  : accountId
+                    ? `Connected\n${evmAddress ? evmAddress : accountId}${
+                        typeof hbarBalance === 'number' ? ` \u2022 ${hbarBalance.toFixed(4)} HBAR` : ''
+                      }`
+                    : 'Connect Wallet'}
               </span>
             </Button>
           </div>
@@ -192,7 +224,15 @@ const Header: React.FC = () => {
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg disabled:opacity-70"
                 >
                   <Wallet className="w-4 h-4" />
-                  <span>{isConnecting ? 'Connecting…' : accountId ? `Connected: ${accountId}` : 'Connect Wallet'}</span>
+                  <span className="text-left">
+                    {isConnecting
+                      ? 'Connecting…'
+                      : accountId
+                        ? `Connected\n${evmAddress ? evmAddress : accountId}${
+                            typeof hbarBalance === 'number' ? ` \u2022 ${hbarBalance.toFixed(4)} HBAR` : ''
+                          }`
+                        : 'Connect Wallet'}
+                  </span>
                 </Button>
               </div>
             </div>

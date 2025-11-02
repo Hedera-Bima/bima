@@ -6,11 +6,10 @@ const fs = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const OpenAI = require('openai');
-const { dbHelpers } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 
 // Middleware
 app.use(cors());
@@ -20,6 +19,30 @@ app.use('/uploads', express.static('uploads'));
 // Ensure uploads directory exists
 fs.ensureDirSync('uploads/images');
 fs.ensureDirSync('uploads/documents');
+
+// JSON file database setup (fallback to file-based persistence)
+const DB_FILE = path.join(__dirname, 'data', 'listings.json');
+fs.ensureDirSync(path.join(__dirname, 'data'));
+if (!fs.existsSync(DB_FILE)) {
+  fs.writeJsonSync(DB_FILE, { listings: [] });
+}
+
+const readDatabase = () => {
+  try {
+    return fs.readJsonSync(DB_FILE);
+  } catch (error) {
+    return { listings: [] };
+  }
+};
+
+const writeDatabase = (data) => {
+  fs.writeJsonSync(DB_FILE, data, { spaces: 2 });
+};
+
+const readListings = () => {
+  const db = readDatabase();
+  return db.listings;
+};
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -94,14 +117,12 @@ const upload = multer({
   }
 });
 
-// SQLite database is initialized in database.js
-
 // Routes
 
 // Get all listings
 app.get('/api/listings', (req, res) => {
   try {
-    const listings = dbHelpers.getAllListings();
+    const listings = readListings();
     res.json(listings);
   } catch (error) {
     console.error('Error fetching listings:', error);
@@ -113,7 +134,9 @@ app.get('/api/listings', (req, res) => {
 app.get('/api/listings/:id', (req, res) => {
   try {
     console.log('Fetching listing with ID:', req.params.id);
-    const listing = dbHelpers.getListingById(req.params.id);
+    const listings = readListings();
+    console.log('Total listings found:', listings.length);
+    const listing = listings.find(l => l.id === req.params.id);
     console.log('Found listing:', listing ? 'Yes' : 'No');
     
     if (!listing) {
@@ -211,37 +234,46 @@ app.post('/api/listings', upload.fields([
     };
 
     // Save to database
-    const savedListing = dbHelpers.createListing(newListing);
+    const db = readDatabase();
+    db.listings.push(newListing);
+    writeDatabase(db);
 
     res.status(201).json({
       message: 'Listing created successfully',
-      listing: savedListing
+      listing: newListing
     });
-
   } catch (error) {
     console.error('Error creating listing:', error);
     res.status(500).json({ error: 'Failed to create listing' });
   }
-});
 
 // Update listing status (for verification)
 app.patch('/api/listings/:id/status', (req, res) => {
   try {
     const { status, verificationStatus } = req.body;
-    const listing = dbHelpers.getListingById(req.params.id);
-    
-    if (!listing) {
+    const db = readDatabase();
+    const idx = db.listings.findIndex(l => l.id === req.params.id);
+    if (idx === -1) {
       return res.status(404).json({ error: 'Listing not found' });
     }
-    
-    const updatedListing = dbHelpers.updateListingStatus(req.params.id, {
-      status,
-      verificationStatus
-    });
-    
+
+    if (status) {
+      db.listings[idx].status = status;
+    }
+
+    if (verificationStatus) {
+      db.listings[idx].verificationStatus = {
+        ...(db.listings[idx].verificationStatus || { documents: 'pending', site: 'pending', legal: 'pending' }),
+        ...verificationStatus
+      };
+    }
+
+    db.listings[idx].updatedAt = new Date().toISOString();
+    writeDatabase(db);
+
     res.json({
       message: 'Listing updated successfully',
-      listing: updatedListing
+      listing: db.listings[idx]
     });
   } catch (error) {
     console.error('Error updating listing:', error);
@@ -252,14 +284,15 @@ app.patch('/api/listings/:id/status', (req, res) => {
 // Delete listing
 app.delete('/api/listings/:id', (req, res) => {
   try {
-    const listing = dbHelpers.deleteListing(req.params.id);
-    
-    if (!listing) {
+    const db = readDatabase();
+    const idx = db.listings.findIndex(l => l.id === req.params.id);
+    if (idx === -1) {
       return res.status(404).json({ error: 'Listing not found' });
     }
-    
+
+    const listing = db.listings[idx];
+
     // Remove associated files
-    // Remove images
     if (listing.images && listing.images.length > 0) {
       listing.images.forEach(image => {
         const imagePath = path.join(__dirname, 'uploads/images', image.filename);
@@ -268,8 +301,7 @@ app.delete('/api/listings/:id', (req, res) => {
         }
       });
     }
-    
-    // Remove documents
+
     if (listing.documents) {
       Object.values(listing.documents).forEach(doc => {
         if (doc) {
@@ -280,7 +312,11 @@ app.delete('/api/listings/:id', (req, res) => {
         }
       });
     }
-    
+
+    // Remove from database
+    db.listings.splice(idx, 1);
+    writeDatabase(db);
+
     res.json({ message: 'Listing deleted successfully' });
   } catch (error) {
     console.error('Error deleting listing:', error);
@@ -308,5 +344,5 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Bima Backend Server running on port ${PORT}`);
   console.log(`📁 Uploads directory: ${path.join(__dirname, 'uploads')}`);
-  console.log(`💾 Database: SQLite (${path.join(__dirname, 'data', 'bima.db')})`);
+  console.log(`💾 Database file: ${DB_FILE}`);
 });
