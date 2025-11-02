@@ -1,6 +1,7 @@
 import axios from "axios";
 
-export const API_BASE_URL = "http://localhost:3000"; // adjust this to your backend URL
+export const API_BASE_URL = "https://bima-hedera-service.fly.dev"; // Hedera Token Service
+export const BACKEND_API_URL = "https://bima-backend.fly.dev"; // Main Backend API
 
 // Health check for Hedera service
 async function isHederaServiceAvailable(): Promise<boolean> {
@@ -122,15 +123,21 @@ export const api = {
     return response.data;
   },
 
-  // Sync listing to local 5000 backend
+  // Create listing on main backend
   async createLocalListing5000(formData: FormData) {
     const response = await axios.post(
-      `http://localhost:5000/api/listings`,
+      `${BACKEND_API_URL}/api/listings`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
       },
     );
+    return response.data;
+  },
+
+  // Get all listings from main backend
+  async getBackendListings() {
+    const response = await axios.get(`${BACKEND_API_URL}/api/listings`);
     return response.data;
   },
 };
