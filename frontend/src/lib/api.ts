@@ -1,7 +1,10 @@
 import axios from "axios";
 
-export const API_BASE_URL = "https://bima-hedera-service.fly.dev"; // Hedera Token Service
-export const BACKEND_API_URL = "https://bima-backend.fly.dev"; // Main Backend API
+// Hedera Token Service URL - Port 3000
+export const API_BASE_URL = import.meta.env.VITE_HEDERA_SERVICE_URL || "http://localhost:3000";
+
+// Main Backend API URL - Port 5000
+export const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5000";
 
 // Health check for Hedera service
 async function isHederaServiceAvailable(): Promise<boolean> {
