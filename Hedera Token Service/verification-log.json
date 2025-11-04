@@ -89,10 +89,27 @@
     "price": "800000",
     "location": "Nairobi",
     "metadataHash": "QmdRLhkDPWcc91yo6X3HSgdCP85ojcKYjd5dNgmWPMx83s",
-    "approvals": [],
-    "verified": false,
-    "status": "pending",
-    "submittedAt": "2025-11-02T04:06:55.084Z"
+    "approvals": [
+      "Chief",
+      "Surveyor"
+    ],
+    "verified": true,
+    "status": "minted",
+    "submittedAt": "2025-11-02T04:06:55.084Z",
+    "verificationHistory": [
+      {
+        "role": "Chief",
+        "name": "Reeanasha",
+        "date": "2025-11-04T07:02:26.751Z"
+      },
+      {
+        "role": "Surveyor",
+        "name": "Dallas",
+        "date": "2025-11-04T08:06:43.488Z"
+      }
+    ],
+    "nftMinted": true,
+    "nftSerial": "12"
   },
   {
     "landId": 1762056905703,
@@ -100,9 +117,26 @@
     "price": "600000",
     "location": "Thika",
     "metadataHash": "QmQh6WK5kbVLcF5yFa7HDcuXoFxorgtzTr16nkUYYXmVrC",
-    "approvals": [],
-    "verified": false,
-    "status": "pending",
-    "submittedAt": "2025-11-02T04:15:05.703Z"
+    "approvals": [
+      "Chief",
+      "Surveyor"
+    ],
+    "verified": true,
+    "status": "minted",
+    "submittedAt": "2025-11-02T04:15:05.703Z",
+    "verificationHistory": [
+      {
+        "role": "Chief",
+        "name": "Reenasha",
+        "date": "2025-11-04T07:04:48.580Z"
+      },
+      {
+        "role": "Surveyor",
+        "name": "Dallas",
+        "date": "2025-11-04T08:06:57.769Z"
+      }
+    ],
+    "nftMinted": true,
+    "nftSerial": "13"
   }
 ]
