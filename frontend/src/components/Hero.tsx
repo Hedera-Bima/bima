@@ -117,7 +117,7 @@ const SellLandContent = ({
         }
       });
 
-      const response = await fetch("https://bima-backend.fly.dev/api/listings", {
+      const response = await fetch("http://localhost:5000/api/listings", {
         method: "POST",
         body: submitFormData,
       });
@@ -669,7 +669,7 @@ export default function Hero() {
       // Fetch from deployed backend (Fly.io)
       let localListings: LandListing[] = [];
       try {
-        const response = await fetch("https://bima-backend.fly.dev/api/listings");
+        const response = await fetch("http://localhost:5000/api/listings");
         if (response.ok) {
           const data = await response.json();
           localListings = data.map(
@@ -691,7 +691,7 @@ export default function Hero() {
                   "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
                 lastUpdated: new Date(listing.createdAt).toLocaleDateString(),
                 imageUrl: listing.images?.[0]?.path
-                  ? `https://bima-backend.fly.dev${listing.images[0].path}`
+                  ? `http://localhost:5000${listing.images[0].path}`
                   : undefined,
                 description: listing.description,
                 landType: listing.landType,
