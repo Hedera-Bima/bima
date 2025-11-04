@@ -9,8 +9,7 @@ README.md
 .DS_Store
 *.log
 uploads/*
-nft-log.json
-verification-log.json
+
 fly.toml
 .dockerignore
 Dockerfile
