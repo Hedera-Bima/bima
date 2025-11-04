@@ -666,46 +666,8 @@ export default function Hero() {
         console.error("Failed to fetch Hedera listings:", error);
       }
 
-      // Fetch from deployed backend (Fly.io)
-      let localListings: LandListing[] = [];
-      try {
-        const response = await fetch("http://localhost:5000/api/listings");
-        if (response.ok) {
-          const data = await response.json();
-          localListings = data.map(
-            (listing: any) =>
-              ({
-                id: listing.id,
-                location: listing.location,
-                area: listing.size,
-                price: listing.price.toString(),
-                title: listing.title,
-                verificationStatus:
-                  listing.status === "verified"
-                    ? "verified"
-                    : listing.status === "pending_verification"
-                      ? "pending"
-                      : "unverified",
-                inspectors: 2,
-                imageGradient:
-                  "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
-                lastUpdated: new Date(listing.createdAt).toLocaleDateString(),
-                imageUrl: listing.images?.[0]?.path
-                  ? `http://localhost:5000${listing.images[0].path}`
-                  : undefined,
-                description: listing.description,
-                landType: listing.landType,
-                seller: listing.seller,
-                images: listing.images,
-              }) as LandListing,
-          );
-        }
-      } catch (error) {
-        console.error("Failed to fetch backend listings:", error);
-      }
-
-      // Combine both sources
-      setBackendListings([...localListings, ...hederaListings]);
+      // Use only Hedera listings
+      setBackendListings(hederaListings);
     } catch (error) {
       console.error("Failed to fetch listings:", error);
     } finally {

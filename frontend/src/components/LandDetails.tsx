@@ -111,55 +111,7 @@ const LandDetails: React.FC = () => {
         }
         let meta: any = null;
 
-        // Handle backend listings differently
-        if (match.source === "backend") {
-          // For backend listings, use the data directly
-          const formattedPrice = match?.price ? String(match.price) : "0";
-          setProperty({
-            id: match.id,
-            title: match.title || "Property",
-            location: match.location || "Unknown",
-            coordinates: { lat: -1.1719, lng: 36.8315 },
-            price: formattedPrice,
-            currency: "KES",
-            area: match.size || "N/A",
-            description: match.description || "",
-            features: match.utilities || [],
-            ownerDID: "",
-            ownerName: match.seller?.name || "",
-            ownerContact: {
-              phone: match.seller?.phone || "",
-              email: match.seller?.email || "",
-            },
-            verificationStatus:
-              match.status === "verified"
-                ? "verified"
-                : match.status === "pending_verification"
-                  ? "pending"
-                  : "unverified",
-            listedDate: match.createdAt
-              ? new Date(match.createdAt).toLocaleDateString()
-              : "N/A",
-            lastUpdated: match.updatedAt
-              ? new Date(match.updatedAt).toLocaleDateString()
-              : "N/A",
-            views: 0,
-            inspections: 0,
-            images: match.images || [],
-            documents: match.documents
-              ? [
-                  match.documents.titleDeed,
-                  match.documents.surveyReport,
-                  match.documents.taxCertificate,
-                ].filter(Boolean)
-              : [],
-            metadataHash: match.metadataHash || null,
-            nftSerial: null,
-            verificationHistory: [],
-          });
-          setLoading(false);
-          return;
-        }
+        // Process Hedera listing only
 
         // For Hedera listings, fetch metadata from IPFS
         if (match.metadataHash) {
