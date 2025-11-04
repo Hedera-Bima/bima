@@ -1,10 +1,31 @@
 import axios from "axios";
 
-// Hedera Token Service URL - Port 3000
-export const API_BASE_URL = import.meta.env.VITE_HEDERA_SERVICE_URL || "http://localhost:3000";
+// Function to detect if running locally or in production
+const getHederaServiceURL = () => {
+  // Check if we have an explicit environment variable
+  if (import.meta.env.VITE_HEDERA_SERVICE_URL) {
+    return import.meta.env.VITE_HEDERA_SERVICE_URL;
+  }
+
+  // Auto-detect based on environment
+  const isLocalDevelopment =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname.startsWith("192.168.") ||
+    window.location.hostname.endsWith(".local") ||
+    import.meta.env.DEV;
+
+  return isLocalDevelopment
+    ? "http://localhost:3000"
+    : "https://bima-hedera-service-v2.fly.dev";
+};
+
+// Hedera Token Service URL - Auto-detects environment
+export const API_BASE_URL = getHederaServiceURL();
 
 // Main Backend API URL - Port 5000
-export const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5000";
+export const BACKEND_API_URL =
+  import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5000";
 
 // Health check for Hedera service
 async function isHederaServiceAvailable(): Promise<boolean> {
