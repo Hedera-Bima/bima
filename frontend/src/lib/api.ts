@@ -23,10 +23,6 @@ const getHederaServiceURL = () => {
 // Hedera Token Service URL - Auto-detects environment
 export const API_BASE_URL = getHederaServiceURL();
 
-// Main Backend API URL - Port 5000
-export const BACKEND_API_URL =
-  import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5000";
-
 // Health check for Hedera service
 async function isHederaServiceAvailable(): Promise<boolean> {
   try {
@@ -147,21 +143,5 @@ export const api = {
     return response.data;
   },
 
-  // Create listing on main backend
-  async createLocalListing5000(formData: FormData) {
-    const response = await axios.post(
-      `${BACKEND_API_URL}/api/listings`,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
-    );
-    return response.data;
-  },
-
-  // Get all listings from main backend
-  async getBackendListings() {
-    const response = await axios.get(`${BACKEND_API_URL}/api/listings`);
-    return response.data;
-  },
+  // Backend functions removed - using only Hedera service
 };
