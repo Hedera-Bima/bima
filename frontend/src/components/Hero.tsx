@@ -98,68 +98,79 @@ const SellLandContent = ({
   const handleSubmit = async (isDraft: boolean = false) => {
     setIsSubmitting(true);
     try {
-      const submitFormData = new FormData();
+      // 1) Upload images to IPFS (optional list)
+      const imageHashes = await Promise.all(
+        uploadedImages.map(async (file) => {
+          const { ipfsHash } = await api.uploadFileToIPFS(file);
+          return ipfsHash as string;
+        }),
+      );
 
-      // Add form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        submitFormData.append(key, value);
+      // 2) Upload documents to IPFS (if provided)
+      const docEntries = await Promise.all(
+        Object.entries(uploadedDocs).map(async ([key, file]) => {
+          if (file) {
+            const { ipfsHash } = await api.uploadFileToIPFS(file);
+            return [key, ipfsHash] as const;
+          }
+          return [key, null] as const;
+        }),
+      );
+      const documents = Object.fromEntries(docEntries) as Record<string, string | null>;
+
+      // 3) Upload metadata JSON to IPFS
+      const metadata = {
+        ...formData,
+        images: imageHashes,
+        documents,
+        timestamp: new Date().toISOString(),
+        status: isDraft ? "draft" : "pending",
+      } as const;
+
+      const { ipfsHash: metadataHash } = await api.uploadJSONToIPFS(metadata);
+
+      // 4) Create land entry on Hedera service (returns landId)
+      const created = await api.createLandNFT({
+        metadataHash,
+        size: formData.size,
+        price: formData.price,
+        location: formData.location,
       });
 
-      // Add images
-      uploadedImages.forEach((image) => {
-        submitFormData.append("images", image);
+      const landId = (created as any)?.landId;
+
+      alert(
+        isDraft
+          ? `Listing created successfully! Submission ID: ${landId ?? "N/A"}`
+          : `Listing submitted for verification! Submission ID: ${landId ?? "N/A"}`,
+      );
+
+      // Reset form
+      setFormData({
+        title: "",
+        location: "",
+        size: "",
+        price: "",
+        description: "",
+        landType: "",
+        zoning: "",
+        utilities: "",
+        accessibility: "",
+        nearbyAmenities: "",
+        sellerName: "",
+        sellerPhone: "",
+        sellerEmail: "",
+      });
+      setUploadedImages([]);
+      setUploadedDocs({
+        titleDeed: null,
+        surveyReport: null,
+        taxCertificate: null,
       });
 
-      // Add documents
-      Object.entries(uploadedDocs).forEach(([key, file]) => {
-        if (file) {
-          submitFormData.append(key, file);
-        }
-      });
-
-      const response = await fetch("http://localhost:5000/api/listings", {
-        method: "POST",
-        body: submitFormData,
-      });
-
-      if (response.ok) {
-        await response.json();
-        alert(
-          isDraft
-            ? "Listing created successfully!"
-            : "Listing submitted for verification!",
-        );
-        // Reset form
-        setFormData({
-          title: "",
-          location: "",
-          size: "",
-          price: "",
-          description: "",
-          landType: "",
-          zoning: "",
-          utilities: "",
-          accessibility: "",
-          nearbyAmenities: "",
-          sellerName: "",
-          sellerPhone: "",
-          sellerEmail: "",
-        });
-        setUploadedImages([]);
-        setUploadedDocs({
-          titleDeed: null,
-          surveyReport: null,
-          taxCertificate: null,
-        });
-
-        // Refresh listings to show the new one immediately
-        await fetchListings();
-
-        // Switch to buy tab to show the new listing
-        setActiveTab("buy");
-      } else {
-        throw new Error("Failed to submit listing");
-      }
+      // Refresh listings then switch to Buy
+      await fetchListings();
+      setActiveTab("buy");
     } catch (error) {
       alert("Error submitting listing. Please try again.");
     } finally {

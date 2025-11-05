@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Wallet } from 'lucide-react';
+import { Menu, X, Wallet, ChevronDown } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { openConnectModal, onSessionEvent } from '@/wallet/hederaConnector';
+import { openConnectModal, onSessionEvent, disconnect as wcDisconnect } from '@/wallet/hederaConnector';
+import { connectHashpack, getConnectedAccount, clearHashpackConnection } from '@/lib/hashpack';
 import { HederaSessionEvent } from '@hashgraph/hedera-wallet-connect';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -14,6 +15,9 @@ const Header: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>("home");
   const [evmAddress, setEvmAddress] = useState<string | null>(null);
   const [hbarBalance, setHbarBalance] = useState<number | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [wcStatus, setWcStatus] = useState<string | null>(null);
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const location = useLocation();
 
   const navLinks = [
@@ -61,11 +65,47 @@ const Header: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const acc = getConnectedAccount?.();
+    if (acc && typeof acc === 'string') {
+      setAccountId(acc);
+      fetchAccountInfo(acc);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for chain changes during WalletConnect flow to update status
+  useEffect(() => {
+    (async () => {
+      try {
+        await onSessionEvent(HederaSessionEvent.ChainChanged as any, () => {
+          setWcStatus(null);
+        });
+      } catch {
+        /* ignore */
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleConnect = async () => {
     if (isConnecting) return;
     try {
       setIsConnecting(true);
-      // Register first to avoid missing an immediate AccountsChanged event
+      try {
+        const hp = await connectHashpack(network as 'testnet' | 'mainnet' | 'previewnet');
+        const first = Array.isArray(hp?.accountIds) ? hp.accountIds[0] : null;
+        if (typeof first === 'string') {
+          setAccountId(first);
+          await fetchAccountInfo(first);
+          setErrorBanner(null);
+          setWcStatus(null);
+          return;
+        }
+      } catch {
+        // fall back to WalletConnect below
+      }
+
       await onSessionEvent(HederaSessionEvent.AccountsChanged as any, (payload: any) => {
         try {
           const list = Array.isArray(payload) ? payload : (payload?.accounts ?? payload?.accountIds ?? []);
@@ -73,17 +113,49 @@ const Header: React.FC = () => {
           if (typeof first === 'string') {
             setAccountId(first);
             fetchAccountInfo(first);
+            setErrorBanner(null);
+            setWcStatus(null);
           }
         } catch (err) {
           console.error('Failed to parse AccountsChanged payload', err, payload);
         }
       });
+      setWcStatus('Waiting for approval in your wallet…');
       await openConnectModal();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to open WalletConnect modal:', e);
+      const msg = String(e?.message || e || '').toLowerCase();
+      if (msg.includes('vite_walletconnect_project_id') || msg.includes('walletconnect configuration error')) {
+        setErrorBanner('WalletConnect is not configured. Add VITE_WALLETCONNECT_PROJECT_ID to frontend/.env and restart the dev server.');
+      } else {
+        setErrorBanner('Wallet connection failed. Please try again.');
+      }
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      clearHashpackConnection();
+      await wcDisconnect();
+    } catch (e) {
+      console.error('Disconnect failed', e);
+    } finally {
+      setAccountId(null);
+      setEvmAddress(null);
+      setHbarBalance(null);
+      setAccountMenuOpen(false);
+      setWcStatus(null);
+    }
+  };
+
+  const formatLabel = () => {
+    const id = evmAddress || accountId;
+    if (!id) return 'Connect Wallet';
+    const left = id.startsWith('0x') ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
+    const bal = typeof hbarBalance === 'number' ? ` • ${hbarBalance.toFixed(4)} HBAR` : '';
+    return `${left}${bal}`;
   };
 
   return (
@@ -93,6 +165,11 @@ const Header: React.FC = () => {
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
     >
+      {errorBanner && (
+        <div className="w-full bg-destructive/15 text-destructive text-sm px-4 py-2 text-center">
+          {errorBanner}
+        </div>
+      )}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -158,24 +235,47 @@ const Header: React.FC = () => {
           {/* Theme Toggle & Connect Wallet Button - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
             <ThemeToggle />
-            <Button
-              type="button"
-              aria-label="Connect Wallet"
-              onClick={handleConnect}
-              disabled={isConnecting}
-              className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              <Wallet className="w-5 h-5" />
-              <span className="text-left">
-                {isConnecting
-                  ? 'Connecting…'
-                  : accountId
-                    ? `Connected\n${evmAddress ? evmAddress : accountId}${
-                        typeof hbarBalance === 'number' ? ` \u2022 ${hbarBalance.toFixed(4)} HBAR` : ''
-                      }`
-                    : 'Connect Wallet'}
-              </span>
-            </Button>
+            {!accountId ? (
+              <Button
+                type="button"
+                aria-label="Connect Wallet"
+                onClick={handleConnect}
+                disabled={isConnecting}
+                className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                <Wallet className="w-5 h-5" />
+                <span className="text-left">{isConnecting ? 'Connecting…' : (wcStatus || 'Connect Wallet')}</span>
+              </Button>
+            ) : (
+              <div className="relative">
+                <Button
+                  type="button"
+                  aria-label="Account Menu"
+                  onClick={() => setAccountMenuOpen((v) => !v)}
+                  className="cursor-pointer select-none flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
+                  <Wallet className="w-5 h-5" />
+                  <span>{formatLabel()}</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`} />
+                </Button>
+                {accountMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-44 rounded-md border border-border/50 bg-background shadow-lg p-1 z-50">
+                    <button
+                      onClick={handleDisconnect}
+                      className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/60 text-foreground text-sm"
+                    >
+                      Disconnect
+                    </button>
+                    <button
+                      onClick={async () => { await handleDisconnect(); window.location.reload(); }}
+                      className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/60 text-foreground text-sm"
+                    >
+                      Reset connection
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -220,7 +320,7 @@ const Header: React.FC = () => {
               <div className="flex items-center justify-between pt-4 border-t border-border/50">
                 <ThemeToggle />
                 <Button
-                  onClick={handleConnect}
+                  onClick={accountId ? handleDisconnect : handleConnect}
                   disabled={isConnecting}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-lg disabled:opacity-70"
                 >
@@ -229,9 +329,7 @@ const Header: React.FC = () => {
                     {isConnecting
                       ? 'Connecting…'
                       : accountId
-                        ? `Connected\n${evmAddress ? evmAddress : accountId}${
-                            typeof hbarBalance === 'number' ? ` \u2022 ${hbarBalance.toFixed(4)} HBAR` : ''
-                          }`
+                        ? 'Disconnect'
                         : 'Connect Wallet'}
                   </span>
                 </Button>
