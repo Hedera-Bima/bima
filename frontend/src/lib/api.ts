@@ -96,10 +96,11 @@ export const api = {
   },
 
   // Listings / Parcels
-  async createListing(metadataHash: string, sellerId: string) {
+  async createListing(metadataHash: string, sellerId: string, indexCid?: string | null) {
     const response = await axios.post(`${API_BASE_URL}/listings`, {
       metadataHash,
       sellerId,
+      indexCid: indexCid || null,
     });
     return response.data;
   },
@@ -109,6 +110,14 @@ export const api = {
       ? `${API_BASE_URL}/parcels?status=${encodeURIComponent(status)}`
       : `${API_BASE_URL}/parcels`;
     const response = await axios.get(url);
+    return response.data;
+  },
+
+  async getListingsByIndex(indexCid: string) {
+    const response = await axios.get(
+      `${API_BASE_URL}/listings/by-index`,
+      { params: { cid: indexCid } },
+    );
     return response.data;
   },
 

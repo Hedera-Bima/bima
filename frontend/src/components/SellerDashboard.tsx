@@ -131,22 +131,48 @@ export default function SellerDashboard() {
 
   useEffect(() => {
     async function loadParcels() {
+      // Try IPFS index first
+      const indexCid = localStorage.getItem('LISTINGS_INDEX_CID');
+      if (indexCid) {
+        try {
+          const res = await api.getListingsByIndex(indexCid);
+          const arr = Array.isArray(res?.items) ? res.items : [];
+          const mappedFromIndex: LandListing[] = arr.map((r: any) => ({
+            id: String(r.listingId || r.id || Date.now()),
+            title: (r.location || 'Land Parcel'),
+            location: r.location || 'Unknown',
+            area: r.size || r.area || '',
+            price: (r.price ?? '').toString(),
+            status: 'listed',
+            createdDate: new Date(r.createdAt || Date.now()).toISOString(),
+            verificationProgress: 100,
+            inspectorsAssigned: 0,
+            requiredInspectors: 2,
+            viewCount: 0,
+            inquiries: 0,
+            documents: [],
+            images: 0,
+            metadataHash: r.metadataHash,
+          }));
+          setHederaListings(mappedFromIndex);
+          return;
+        } catch {
+          // fall through to Hedera log
+        }
+      }
+      // Fallback to Hedera verification log
       try {
         const res = await api.getParcels();
         const items = Array.isArray(res?.items) ? res.items : [];
         const mapped: LandListing[] = items.map((p: any) => ({
           id: String(p.landId),
-          title: p.location || "Land Parcel",
-          location: p.location || "Unknown",
-          area: p.size || "",
-          price: (p.price ?? "").toString(),
-          status: (p.status === "minted"
-            ? "verified"
-            : p.status === "pending"
-              ? "pending-verification"
-              : "listed") as any,
+          title: p.location || 'Land Parcel',
+          location: p.location || 'Unknown',
+          area: p.size || '',
+          price: (p.price ?? '').toString(),
+          status: (p.status === 'minted' ? 'verified' : p.status === 'pending' ? 'pending-verification' : 'listed') as any,
           createdDate: new Date(p.submittedAt || Date.now()).toISOString(),
-          verificationProgress: p.status === "pending" ? 50 : 100,
+          verificationProgress: p.status === 'pending' ? 50 : 100,
           inspectorsAssigned: p.approvals?.length ?? 0,
           requiredInspectors: 2,
           viewCount: 0,
@@ -428,14 +454,18 @@ export default function SellerDashboard() {
         // Continue even if Hedera fails - we'll still save to local database
       }
 
-      // 4) Save listing to Hedera service for marketplace visibility (production-safe)
+      // 4) Save listing to Hedera service for marketplace visibility (IPFS index-backed)
       try {
-        const sellerId = formData.sellerEmail || formData.sellerPhone || "anonymous";
-        await api.createListing(metadataHash, sellerId);
+        const sellerId = formData.sellerEmail || formData.sellerPhone || 'anonymous';
+        const existingIndex = localStorage.getItem('LISTINGS_INDEX_CID');
+        const resp = await api.createListing(metadataHash, sellerId, existingIndex || null);
+        if (resp?.indexCid) {
+          localStorage.setItem('LISTINGS_INDEX_CID', resp.indexCid);
+        }
         createdSuccessfully = true;
       } catch (error) {
-        console.error("Error saving listing:", error);
-        alert("Error saving listing. Please try again.");
+        console.error('Error saving listing:', error);
+        alert('Error saving listing. Please try again.');
         setIsSubmitting(false);
         return;
       }

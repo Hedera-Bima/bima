@@ -18,6 +18,13 @@ const upload = multer({ dest: 'uploads/' });
 app.use(cors());
 app.use(express.json());
 
+async function fetchJsonFromIPFS(cid) {
+  const url = `https://gateway.pinata.cloud/ipfs/${cid}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Failed to fetch IPFS content: ${cid}`);
+  return await r.json();
+}
+
 // Health Check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
@@ -69,14 +76,13 @@ function saveJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-// POST /listings: Create listing referencing metadata
+// POST /listings: Create listing and store directly on IPFS
 app.post('/listings', async (req, res) => {
   try {
-    const { metadataHash, sellerId } = req.body;
+    const { metadataHash, sellerId, indexCid } = req.body;
     if (!metadataHash || !sellerId) {
       return res.status(400).json({ error: 'Both metadataHash and sellerId required' });
     }
-    // Simple log (JSON file-based)
     const listingsFile = path.join(process.cwd(), 'listings-log.json');
     let data = loadJsonSafe(listingsFile);
     const record = {
@@ -86,11 +92,28 @@ app.post('/listings', async (req, res) => {
       status: 'pending_verification',
       createdAt: new Date().toISOString()
     };
+    try {
+      const cidRes = await uploadJSONToIPFS(record);
+      if (cidRes) record.ipfsCid = cidRes;
+    } catch {}
     data.push(record);
     saveJson(listingsFile, data);
-    res.json({ listingId: record.listingId, status: record.status, message: 'Listing created successfully.' });
+    let nextIndex = [];
+    if (indexCid) {
+      try {
+        const current = await fetchJsonFromIPFS(indexCid);
+        if (Array.isArray(current)) nextIndex = current;
+      } catch {}
+    }
+    if (record.ipfsCid) nextIndex.push(record.ipfsCid);
+    let newIndexCid = null;
+    try {
+      newIndexCid = await uploadJSONToIPFS(nextIndex);
+    } catch {}
+    res.json({ listingId: record.listingId, status: record.status, ipfsCid: record.ipfsCid, indexCid: newIndexCid || indexCid || null, message: 'Listing created successfully.' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error saving listing to IPFS:', error);
+    res.status(500).json({ error: error.message || 'Failed to save listing to IPFS' });
   }
 });
 
@@ -119,6 +142,12 @@ app.post('/nft/create', upload.array('documents'), async (req, res) => {
       submittedAt: new Date().toISOString()
     };
 
+    // Upload land entry snapshot to IPFS and attach CID (for auditing/indexing)
+    try {
+      const cidRes = await uploadJSONToIPFS(landEntry);
+      if (cidRes) landEntry.ipfsCid = cidRes;
+    } catch {}
+
     // Add to verification log
     verificationLog.push(landEntry);
     saveVerificationLog(verificationLog);
@@ -127,8 +156,40 @@ app.post('/nft/create', upload.array('documents'), async (req, res) => {
     res.json({ 
       success: true, 
       landId: landEntry.landId,
+      ipfsCid: landEntry.ipfsCid,
       message: 'Land parcel submitted for verification'
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/listings/index', async (req, res) => {
+  try {
+    const { cid } = req.query;
+    if (!cid) return res.status(400).json({ error: 'cid is required' });
+    const arr = await fetchJsonFromIPFS(String(cid));
+    if (!Array.isArray(arr)) return res.json({ items: [] });
+    res.json({ items: arr });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/listings/by-index', async (req, res) => {
+  try {
+    const { cid } = req.query;
+    if (!cid) return res.status(400).json({ error: 'cid is required' });
+    const arr = await fetchJsonFromIPFS(String(cid));
+    if (!Array.isArray(arr) || arr.length === 0) return res.json({ items: [] });
+    const results = [];
+    for (const c of arr) {
+      try {
+        const item = await fetchJsonFromIPFS(String(c));
+        results.push({ ...item, ipfsCid: c });
+      } catch {}
+    }
+    res.json({ items: results });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
