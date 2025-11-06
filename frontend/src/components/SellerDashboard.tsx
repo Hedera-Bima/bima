@@ -428,43 +428,14 @@ export default function SellerDashboard() {
         // Continue even if Hedera fails - we'll still save to local database
       }
 
-      // 4) Submit to local backend (port 5000) for marketplace visibility - this is critical
-      const submitFormData = new FormData();
-
-      // Add all form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        submitFormData.append(key, value);
-      });
-
-      // Add metadata hash for tracking
-      submitFormData.append("metadataHash", metadataHash);
-
-      // Add images
-      uploadedImages.forEach((image) => {
-        submitFormData.append("images", image);
-      });
-
-      // Add documents
-      Object.entries(uploadedDocs).forEach(([key, file]) => {
-        if (file) {
-          submitFormData.append(key, file);
-        }
-      });
-
-      // Submit to local backend
+      // 4) Save listing to Hedera service for marketplace visibility (production-safe)
       try {
-        const response = await fetch("http://localhost:5000/api/listings", {
-          method: "POST",
-          body: submitFormData,
-        });
-
-        if (!response.ok) {
-          console.error("Failed to sync with local backend");
-        }
+        const sellerId = formData.sellerEmail || formData.sellerPhone || "anonymous";
+        await api.createListing(metadataHash, sellerId);
         createdSuccessfully = true;
       } catch (error) {
-        console.error("Error syncing with local backend:", error);
-        alert("Error saving listing to local database. Please try again.");
+        console.error("Error saving listing:", error);
+        alert("Error saving listing. Please try again.");
         setIsSubmitting(false);
         return;
       }
